@@ -4,7 +4,7 @@
 
 
 // match-action pipeline
-control TopPipe(inout headers headers,
+control TopPipe(inout headers h,
                 inout user_metadata_t user_metadata,
                 inout digest_data_t digest_data,
                 inout sume_metadata_t sume_metadata) {
@@ -17,7 +17,7 @@ control TopPipe(inout headers headers,
     }
 
     table forward {
-        key = { headers.ethernet.dstAddr: exact; }
+        key = { h.ethernet.dstAddr: exact; }
 
         actions = {
             set_output_port;
@@ -43,7 +43,7 @@ control TopPipe(inout headers headers,
     }
 
     table smac {
-        key = { headers.ethernet.srcAddr: exact; }
+        key = { h.ethernet.srcAddr: exact; }
 
         actions = {
             NoAction;
@@ -54,10 +54,12 @@ control TopPipe(inout headers headers,
 
     action send_to_control() {
         digest_data.src_port = sume_metadata.src_port;
-        digest_data.eth_src_addr = 16w0 ++ headers.ethernet.srcAddr;
+        digest_data.eth_src_addr = 16w0 ++ h.ethernet.srcAddr;
         digest_data.allocated_register = 64w0; // Set by the control plane;
         sume_metadata.send_dig_to_cpu = 1;
     }
+
+    MemcachedControl() memctrl;
 
     apply {
         // try to forward based on destination Ethernet address
@@ -72,8 +74,9 @@ control TopPipe(inout headers headers,
             send_to_control();
         }
 
-        if (headers.memcached.isValid()) {
-            MemcachedControl.apply(headers, user_metadata, digest_data, sume_metadata);
+        if (h.memcached.isValid()) {
+           memctrl.apply(h, user_metadata, digest_data, sume_metadata);
+           // memctrl.apply();
         }
     }
 }
@@ -91,7 +94,8 @@ control TopDeparser(packet_out packet,
         packet.emit(hdr.ipv4);
         packet.emit(hdr.udp);
         packet.emit(hdr.memcached);
-        packet.emit(hdr.extras);
+        packet.emit(hdr.extras32);
+        packet.emit(hdr.extras64); 
         packet.emit(hdr.key);
         packet.emit(hdr.value);
     }

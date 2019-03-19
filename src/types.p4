@@ -10,7 +10,7 @@
 typedef bit<48> EthernetAddress;
 
 // standard Ethernet header
-header Ethernet_h {
+header ethernet_t {
     EthernetAddress dstAddr;
     EthernetAddress srcAddr;
     bit<16> etherType;
@@ -34,7 +34,7 @@ header ipv4_t {
 header udp_t {
     bit<16> srcPort;
     bit<16> dstPort;
-    bit<16> length_;
+    bit<16> length;
     bit<16> checksum;
 }
 
@@ -59,28 +59,29 @@ header extras_64_t {
     bit<32> expiration;
 }
 
-header_union extras_t {
-    extras_32_t extras_32;
-    extras_64_t extras_64;
-}
+//header_union extras_t {
+//    extras_32_t extras_32;
+//    extras_64_t extras_64;
+//}
 
 header key_t {
-    varbit<1024> key;
+    // varbit<1024> key;
+    bit<64> key;
 }
 
 header value_t {
-    varbit<2048> value;
+    // varbit<2048> value;
+    bit<128> value;
 }
 
 // List of all recognized headers
 struct headers {
     ethernet_t       ethernet;
     ipv4_t           ipv4;
-    ipv6_t           ipv6;
-    tcp_t            tcp;
     udp_t            udp;
     memcached_t      memcached;
-    extras_t         extras;
+    extras_32_t      extras32;
+    extras_64_t      extras64;
     key_t            key;
     value_t          value;
 }

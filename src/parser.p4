@@ -37,8 +37,8 @@
 
 // Parser Implementation
 @Xilinx_MaxPacketRegion(16384)
-parser TopParser(packet_in b,
-                 out headers p,
+parser TopParser(packet_in buffer,
+                 out headers hdr,
                  out user_metadata_t user_metadata,
                  out digest_data_t digest_data,
                  inout sume_metadata_t sume_metadata) {
@@ -57,7 +57,7 @@ parser TopParser(packet_in b,
 
     state parse_ipv4 {
         buffer.extract(hdr.ipv4);
-        verify(hdr.ipv4.ihl == 5, error.UnhandledIPv4Options);
+        // verify(hdr.ipv4.ihl == 5, error.UnhandledIPv4Options);
         transition select(hdr.ipv4.protocol) {
             17: parse_udp;
             default: accept;
@@ -76,28 +76,30 @@ parser TopParser(packet_in b,
         buffer.extract(hdr.memcached);
         transition select(hdr.memcached.extras_length) {
             0:  parse_key;
-            32: parse_extras_32
-            64: parse_extras_64
+            32: parse_extras_32;
+            64: parse_extras_64;
             default: reject;
         }
     }
 
     state parse_extras_32 {
-        buffer.extract(hdr.extras.extras_32);
+        buffer.extract(hdr.extras32);
         transition parse_key;
     }
     state parse_extras_64 {
-        buffer.extract(hdr.extras.extras_64);
+        buffer.extract(hdr.extras64);
         transition parse_key;
     }
 
     state parse_key {
-        buffer.extract(hdr.key, (bit<32>)hdr.memcached.key_length);
+        // buffer.extract(hdr.key, ((bit<32>)(hdr.memcached.key_length)));
+        buffer.extract(hdr.key);
         transition parse_value;
     }
 
     state parse_value {
-        buffer.extract(hdr.value, (bit<32>)(hdr.memcached.total_length - 192 - hdr.memcached.key_length - hdr.memcached.extras_length));
+        // buffer.extract(hdr.value, (bit<32>)(hdr.memcached.total_length - 192 - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length)));
+        buffer.extract(hdr.value);
         transition accept;
     }
 }
