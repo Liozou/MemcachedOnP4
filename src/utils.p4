@@ -25,23 +25,22 @@
 #define GOTO_AND_DO_NEXT_11(macro) macro(10,11) GOTO_AND_DO_NEXT_10(macro)
 
 
-/*
-#define REPEAT_0(macro) macro(0)
-#define REPEAT_1(macro) macro(1) REPEAT_0(macro)
-#define REPEAT_2(macro) macro(2) REPEAT_1(macro)
-#define REPEAT_3(macro) macro(3) REPEAT_2(macro)
-#define REPEAT_4(macro) macro(4) REPEAT_3(macro)
-#define REPEAT_5(macro) macro(5) REPEAT_4(macro)
-#define REPEAT_6(macro) macro(6) REPEAT_5(macro)
-#define REPEAT_7(macro) macro(7) REPEAT_6(macro)
-#define REPEAT_8(macro) macro(8) REPEAT_7(macro)
-#define REPEAT_9(macro) macro(9) REPEAT_8(macro)
-#define REPEAT_10(macro) macro(10) REPEAT_9(macro)
-#define REPEAT_11(macro) macro(11) REPEAT_10(macro)
+#define REPEAT_EXP_0(macro) macro(0,1)
+#define REPEAT_EXP_1(macro) macro(1,2) REPEAT_EXP_0(macro)
+#define REPEAT_EXP_2(macro) macro(2,4) REPEAT_EXP_1(macro)
+#define REPEAT_EXP_3(macro) macro(3,8) REPEAT_EXP_2(macro)
+#define REPEAT_EXP_4(macro) macro(4,16) REPEAT_EXP_3(macro)
+#define REPEAT_EXP_5(macro) macro(5,32) REPEAT_EXP_4(macro)
+#define REPEAT_EXP_6(macro) macro(6,64) REPEAT_EXP_5(macro)
+#define REPEAT_EXP_7(macro) macro(7,128) REPEAT_EXP_6(macro)
+#define REPEAT_EXP_8(macro) macro(8,256) REPEAT_EXP_7(macro)
+#define REPEAT_EXP_9(macro) macro(9,512) REPEAT_EXP_8(macro)
+#define REPEAT_EXP_10(macro) macro(10,1024) REPEAT_EXP_9(macro)
+#define REPEAT_EXP_11(macro) macro(11,2048) REPEAT_EXP_10(macro)
 
-#define _REPEAT_KEY(macro) REPEAT_10(macro)
-#define _REPEAT_VALUE(macro) REPEAT_11(macro)
-*/
+#define _REPEAT_EXP_KEY(macro) REPEAT_EXP_10(macro)
+#define _REPEAT_EXP_VALUE(macro) REPEAT_EXP_11(macro)
+
 
 #define _REPEAT_KEY(macro) DO_AND_GOTO_NEXT_10(macro)
 #define _REPEAT_VALUE(macro) DO_AND_GOTO_NEXT_11(macro)
@@ -50,9 +49,9 @@
 #define _REPEAT_VALUE_ORDER(macro) GOTO_AND_DO_NEXT_11(macro)
 
 
-#define MAKE_VARBIT_KEY(null, n) header key_##n##_t { bit<(1<<n)> key; }
+#define MAKE_VARBIT_KEY(name, val) header key_##name##_t { bit<val> key; }
 #define MAKE_KEY_T _REPEAT_KEY(MAKE_VARBIT_KEY)
-#define MAKE_VARBIT_VALUE(null, n) header value_##n##_t { bit<(1<<n)> value; }
+#define MAKE_VARBIT_VALUE(name, val) header value_##name##_t { bit<val> value; }
 #define MAKE_VALUE_T _REPEAT_VALUE(MAKE_VARBIT_VALUE)
 
 
