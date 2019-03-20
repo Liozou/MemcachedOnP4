@@ -50,9 +50,9 @@
 
 
 #define MAKE_VARBIT_KEY(name, val) header key_##name##_t { bit<val> key; }
-#define MAKE_KEY_T _REPEAT_KEY(MAKE_VARBIT_KEY)
+#define MAKE_KEY_T _REPEAT_EXP_KEY(MAKE_VARBIT_KEY)
 #define MAKE_VARBIT_VALUE(name, val) header value_##name##_t { bit<val> value; }
-#define MAKE_VALUE_T _REPEAT_VALUE(MAKE_VARBIT_VALUE)
+#define MAKE_VALUE_T _REPEAT_EXP_VALUE(MAKE_VARBIT_VALUE)
 
 
 #define _MAKE_STRUCT_KEYS(null, n) key_##n##_t key_##n;
@@ -61,28 +61,44 @@
 #define MAKE_STRUCT_VALUES _REPEAT_VALUE(_MAKE_STRUCT_VALUES)
 
 
-#define _PARSE_KEY(next, n)                        \
-    state parse_key_##n {                           \
-        if(hdr.memcached.key_length[n] == 1) {      \
-            buffer.extract(hdr.key_##n);            \
-        }                                           \
-        transition parse_key_##next;                \
+#define _PARSE_EXTRACT_KEY(next, n)   \
+    state parse_extract_key_##n {     \
+        buffer.extract(hdr.key_##n);  \
+        transition parse_key_##next;  \
     }
+
+#define _PARSE_KEY(next, n)                   \
+    state parse_key_##n {                     \
+        select(hdr.memcached.key_length[n]) { \
+            1 : parse_extract_key##n;         \
+            _ : parse_key_##next;             \
+        }                                     \
+    }
+
 #define PARSE_KEY \
-    parse_key_null { transition parse_value_11; } \
+    state parse_key_null { transition parse_value_11; } \
+    _REPEAT_KEY(_PARSE_EXTRACT_KEY) \
     _REPEAT_KEY(_PARSE_KEY)
 
-#define _PARSE_VALUE(next, n)                      \
-    state parse_value_##n {                         \
-        if(user_metadata.value_size[n] == 1) {      \
-            buffer.extract(hdr.value_##n);          \
-        }                                           \
-        transition parse_value_##next;              \
-    }
-#define PARSE_VALUE \
-    parse_value_null { transition accept; } \
-    _REPEAT_VALUE(_PARSE_VALUE)
 
+#define _PARSE_EXTRACT_VALUE(next, n)   \
+    state parse_extract_value_##n {     \
+        buffer.extract(hdr.value_##n);  \
+        transition parse_value_##next;  \
+    }
+
+#define _PARSE_VALUE(next, n)                   \
+    state parse_value_##n {                     \
+        select(hdr.memcached.value_length[n]) { \
+            1 : parse_extract_value##n;         \
+            _ : parse_value_##next;             \
+        }                                     \
+    }
+
+#define PARSE_VALUE \
+    state parse_value_null { transition parse_value_11; } \
+    _REPEAT_value(_PARSE_EXTRACT_VALUE) \
+    _REPEAT_value(_PARSE_VALUE)
 
 #define _DEPARSE_KEY(null, n) packet.emit(hdr.key_##n);
 #define DEPARSE_KEY _REPEAT_KEY_ORDER(_DEPARSE_KEY)
