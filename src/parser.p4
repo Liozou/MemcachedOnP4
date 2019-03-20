@@ -74,6 +74,7 @@ parser TopParser(packet_in buffer,
 
     state parse_memcached {
         buffer.extract(hdr.memcached);
+        user_metadata.value_size = (bit<32>)(hdr.memcached.total_length - 192 - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length))
         transition select(hdr.memcached.extras_length) {
             0:  parse_key;
             32: parse_extras_32;
@@ -83,14 +84,15 @@ parser TopParser(packet_in buffer,
     }
 
     state parse_extras_32 {
-        buffer.extract(hdr.extras32);
+        buffer.extract(hdr.extras_flags);
         transition parse_key;
     }
     state parse_extras_64 {
-        buffer.extract(hdr.extras64);
+        buffer.extract(hdr.extras_flags);
+        buffer.extract(hdr.extras_expiration);
         transition parse_key;
     }
-
+/*
     state parse_key {
         // buffer.extract(hdr.key, ((bit<32>)(hdr.memcached.key_length)));
         buffer.extract(hdr.key);
@@ -102,4 +104,9 @@ parser TopParser(packet_in buffer,
         buffer.extract(hdr.value);
         transition accept;
     }
+*/
+
+    PARSE_VALUE_ALL
+
+    PARSE_KEY_ALL
 }

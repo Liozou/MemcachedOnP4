@@ -6,6 +6,7 @@
 
 #include <core.p4>
 #include <sume_switch.p4>
+#include "utils.p4"
 
 typedef bit<48> EthernetAddress;
 
@@ -50,29 +51,17 @@ header memcached_t {
     bit<64> CAS;
 }
 
-header extras_32_t {
+header extras_flags_t {
     bit<32> flags;
 }
 
-header extras_64_t {
-    bit<32> flags;
+header extras_expiration_t {
     bit<32> expiration;
 }
 
-//header_union extras_t {
-//    extras_32_t extras_32;
-//    extras_64_t extras_64;
-//}
+MAKE_KEY_T
 
-header key_t {
-    // varbit<1024> key;
-    bit<64> key;
-}
-
-header value_t {
-    // varbit<2048> value;
-    bit<128> value;
-}
+MAKE_VALUE_T
 
 // List of all recognized headers
 struct headers {
@@ -80,10 +69,10 @@ struct headers {
     ipv4_t           ipv4;
     udp_t            udp;
     memcached_t      memcached;
-    extras_32_t      extras32;
-    extras_64_t      extras64;
-    key_t            key;
-    value_t          value;
+    extras_flags_t   extras_flags;
+    extras_expiration_t extras_expiration;
+    MAKE_STRUCT_KEYS
+    MAKE_STRUCT_VALUES
 }
 
 // digest data to send to cpu if desired
@@ -96,8 +85,5 @@ struct digest_data_t {
 
 struct user_metadata_t {
     bool isRequest;
-    bit<8>  unused;
+    bit<32> value_size;
 }
-
-
-typedef bit<64> reg_address_t;
