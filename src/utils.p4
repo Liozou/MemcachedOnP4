@@ -48,6 +48,8 @@
 #define _REPEAT_KEY_ORDER(macro) GOTO_AND_DO_NEXT_10(macro)
 #define _REPEAT_VALUE_ORDER(macro) GOTO_AND_DO_NEXT_11(macro)
 
+#define PARSE_KEY_TOP parse_key_10
+#define PARSE_VALUE_TOP parse_value_11
 
 #define MAKE_VARBIT_KEY(name, val) header key_##name##_t { bit<val> key; }
 #define MAKE_KEY_T _REPEAT_EXP_KEY(MAKE_VARBIT_KEY)
@@ -69,14 +71,14 @@
 
 #define _PARSE_KEY(next, n)                   \
     state parse_key_##n {                     \
-        select(hdr.memcached.key_length[n]) { \
-            1 : parse_extract_key##n;         \
-            _ : parse_key_##next;             \
-        }                                     \
+        transition select(hdr.memcached.key_length[n:n]) { \
+            1 : parse_extract_key_##n;         \
+            _ : parse_key_##next;              \
+        }                                      \
     }
 
 #define PARSE_KEY \
-    state parse_key_null { transition parse_value_11; } \
+    state parse_key_null { transition PARSE_VALUE_TOP; } \
     _REPEAT_KEY(_PARSE_EXTRACT_KEY) \
     _REPEAT_KEY(_PARSE_KEY)
 
@@ -89,16 +91,16 @@
 
 #define _PARSE_VALUE(next, n)                   \
     state parse_value_##n {                     \
-        select(hdr.memcached.value_length[n]) { \
-            1 : parse_extract_value##n;         \
-            _ : parse_value_##next;             \
-        }                                     \
+        transition select(user_metadata.value_size[n:n]) { \
+            1 : parse_extract_value_##n;         \
+            _ : parse_value_##next;              \
+        }                                        \
     }
 
 #define PARSE_VALUE \
-    state parse_value_null { transition parse_value_11; } \
-    _REPEAT_value(_PARSE_EXTRACT_VALUE) \
-    _REPEAT_value(_PARSE_VALUE)
+    state parse_value_null { transition accept; } \
+    _REPEAT_VALUE(_PARSE_EXTRACT_VALUE) \
+    _REPEAT_VALUE(_PARSE_VALUE)
 
 #define _DEPARSE_KEY(null, n) packet.emit(hdr.key_##n);
 #define DEPARSE_KEY _REPEAT_KEY_ORDER(_DEPARSE_KEY)

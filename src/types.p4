@@ -35,7 +35,7 @@ header ipv4_t {
 header udp_t {
     bit<16> srcPort;
     bit<16> dstPort;
-    bit<16> length;
+    bit<16> udpLength;
     bit<16> checksum;
 }
 

@@ -73,7 +73,7 @@ control TopPipe(inout headers hdr,
         }
 
         if (hdr.memcached.isValid()) {
-           MemcachedControl.apply(h, user_metadata, digest_data, sume_metadata);
+           MemcachedControl.apply(hdr, user_metadata, digest_data, sume_metadata);
            // memctrl.apply();
         }
     }

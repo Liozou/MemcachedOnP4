@@ -45,10 +45,12 @@ parser TopParser(packet_in buffer,
 
     state start {
         buffer.extract(hdr.ethernet);
-        user_metadata.unused = 0;
+        user_metadata.isRequest = false;
+        user_metadata.value_size = 0;
         digest_data.src_port = 0;
         digest_data.eth_src_addr = 0;
         digest_data.unused = 0;
+        digest_data.allocated_register = 0;
         transition select(hdr.ethernet.etherType) {
             0x0800: parse_ipv4;
             default: accept;
@@ -76,7 +78,7 @@ parser TopParser(packet_in buffer,
         buffer.extract(hdr.memcached);
         user_metadata.value_size = (bit<32>)(hdr.memcached.total_length - 192 - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length));
         transition select(hdr.memcached.extras_length) {
-            0:  parse_key;
+            0:  PARSE_KEY_TOP;
             32: parse_extras_32;
             64: parse_extras_64;
             default: reject;
@@ -85,26 +87,13 @@ parser TopParser(packet_in buffer,
 
     state parse_extras_32 {
         buffer.extract(hdr.extras_flags);
-        transition parse_key;
+        transition PARSE_KEY_TOP;
     }
     state parse_extras_64 {
         buffer.extract(hdr.extras_flags);
         buffer.extract(hdr.extras_expiration);
-        transition parse_key;
+        transition PARSE_KEY_TOP;
     }
-/*
-    state parse_key {
-        // buffer.extract(hdr.key, ((bit<32>)(hdr.memcached.key_length)));
-        buffer.extract(hdr.key);
-        transition parse_value;
-    }
-
-    state parse_value {
-        // buffer.extract(hdr.value, (bit<32>)(hdr.memcached.total_length - 192 - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length)));
-        buffer.extract(hdr.value);
-        transition accept;
-    }
-*/
 
     PARSE_VALUE
 
