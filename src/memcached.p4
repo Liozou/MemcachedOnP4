@@ -1,54 +1,62 @@
 
+#define REG_READ 8w0
+#define REG_WRITE 8w1
+@Xilinx_MaxLatency(1)
+@Xilinx_ControlWidth(width(regAddr2048))
+extern void slab2048_reg_rw<regAddr2048, bit<2048>>(in regAddr2048 index,
+                                    in bit<2048> newVal,
+                                    in bit<8> opCode,
+                                    out bit<2048> result);
+
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
                 inout digest_data_t digest_data,
                 inout sume_metadata_t sume_metadata) {
 
-    action   set_isRequest() { user_metadata.isRequest = true; }
-    action unset_isRequest() { user_metadata.isRequest = false; }
 
-    action drop() { sume_metadata.dst_port = 0; }
+    action drop() { sume_metadata.dst_port = 0; exit; }
 
-    table memcached_magic {
-        key = { hdr.memcached.magic: exact; }
-        actions = { set_isRequest; unset_isRequest; drop; }
-        default_action = drop;
-        const entries = {
-            0x80 :   set_isRequest();
-            0x81 : unset_isRequest();
-        }
+
+    action set_register_address(slabId_t sID, regAddr_t reg_addr) {
+        user_metadata.slabID = sID;
+        user_metadata.reg_address = reg_addr;
+    }
+    table memcached_keyvalue {
+        key { hdr.key_10: exact } // TODO change
+        actions = { set_register_address; }
     }
 
-
-    action handle_set() {
-    }
-
-    action handle_get() {
-    }
-
-    action handle_delete() {
-    }
-
-    table memcached_opcode {
-        key = { hdr.memcached.opcode: exact; }
-        actions = {
-            handle_get;
-            handle_set;
-            handle_delete;
-            drop;
-        }
-        default_action = drop;
-        const entries = {
-            0x00 : handle_get();
-            0x01 : handle_set();
-            0x04 : handle_delete();
-        }
-    }
 
     apply {
-        memcached_magic.apply();
-        // memcached_keyvalue.apply();
-        memcached_opcode.apply();
+        user_metadata.isRequest = (hdr.memcached.magic == 0x80);
+        if (!user_metadata.isRequest && hdr.memcached.magic != 0x81) {
+            drop();
+        }
+        if (memcached_keyvalue.apply().hit) {
+            bit<8> opCode;
+            bool do_reg_operation = false;
+            if (OP_IS_GET) {
+                do_reg_operation = true;
+                opCode = REG_READ;
+            } else if (OP_IS_SET) {
+                do_reg_operation = true;
+                opCode = REG_WRITE;
+            }
+
+            if (do_reg_operation) {
+                if (user_metadata.slabID == 7) {
+                    hdr.value_11.setValid(); // TODO change
+                    slab2048_reg_rw(user_metadata.reg_address, hdr.value_11.value, newval, opCode, hdr.value_11.value);
+                }
+            }
+
+            hdr.memcached.magic = 0x81 // Returning a response packet
+            hdr.memcached.vbucket_id = 0 // No error
+
+        } else { // If miss
+
+        }
+
     }
 
 }

@@ -106,3 +106,8 @@
 #define DEPARSE_KEY _REPEAT_KEY_ORDER(_DEPARSE_KEY)
 #define _DEPARSE_VALUE(null, n) packet.emit(hdr.value_##n);
 #define DEPARSE_VALUE _REPEAT_VALUE_ORDER(_DEPARSE_VALUE)
+
+
+#define OP_IS_GET (hdr.memcached.opcode==0x00)
+#define OP_IS_SET (hdr.memcached.opcode==0x01)
+#define OP_IS_DELETE (hdr.memcached.opcode==0x04)

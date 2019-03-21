@@ -46,11 +46,12 @@ parser TopParser(packet_in buffer,
     state start {
         buffer.extract(hdr.ethernet);
         user_metadata.isRequest = false;
+        user_metadata.slabID = 0;
+        user_metadata.reg_address = 0;
         user_metadata.value_size = 0;
         digest_data.src_port = 0;
         digest_data.eth_src_addr = 0;
         digest_data.unused = 0;
-        digest_data.allocated_register = 0;
         transition select(hdr.ethernet.etherType) {
             0x0800: parse_ipv4;
             default: accept;

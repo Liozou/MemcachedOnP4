@@ -9,6 +9,9 @@
 #include "utils.p4"
 
 typedef bit<48> EthernetAddress;
+typedef bit<4> regAddr2048;
+typedef bit<3> slabId_t;
+typedef bit<8> regAddr_t;
 
 // standard Ethernet header
 header ethernet_t {
@@ -78,12 +81,13 @@ struct headers {
 // digest data to send to cpu if desired
 struct digest_data_t {
     bit<120> unused;
-    bit<64> allocated_register;
     bit<64> eth_src_addr;
     port_t src_port;
 }
 
 struct user_metadata_t {
     bool isRequest;
+    slabId_t slabID;
+    regAddr_t reg_address;
     bit<32> value_size;
 }
