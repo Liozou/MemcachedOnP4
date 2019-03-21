@@ -1,4 +1,7 @@
-
+#include <core.p4>
+#include <sume_switch.p4>
+#include "utils.p4"
+#include "types.p4"
 #include "parser.p4"
 #include "memcached.p4"
 

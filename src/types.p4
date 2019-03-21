@@ -4,10 +4,6 @@
 // example "psa-example-incremental-checksum2".
 
 
-#include <core.p4>
-#include <sume_switch.p4>
-#include "utils.p4"
-
 typedef bit<48> EthernetAddress;
 typedef bit<4> regAddr2048;
 typedef bit<3> slabId_t;

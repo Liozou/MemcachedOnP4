@@ -33,7 +33,6 @@
 //
 
 
-#include "types.p4"
 
 // Parser Implementation
 @Xilinx_MaxPacketRegion(16384)
