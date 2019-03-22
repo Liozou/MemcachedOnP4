@@ -52,6 +52,7 @@ parser TopParser(packet_in buffer,
         digest_data.src_port = 0;
         digest_data.eth_src_addr = 0;
         digest_data.unused = 0;
+        digest_data.fuzz = 0;
         transition select(hdr.ethernet.etherType) {
             0x0800: parse_ipv4;
             default: accept;
@@ -77,6 +78,7 @@ parser TopParser(packet_in buffer,
 
     state parse_memcached {
         buffer.extract(hdr.memcached);
+        digest_data.fuzz = 0xcafffe;
         user_metadata.value_size = (bit<32>)(hdr.memcached.total_length - 192 - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length));
         transition select(hdr.memcached.extras_length) {
             0:  PARSE_KEY_TOP;

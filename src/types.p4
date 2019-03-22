@@ -6,7 +6,7 @@
 
 typedef bit<48> EthernetAddress;
 typedef bit<8> regAddr_t;
-typedef bit<384> key_t
+typedef bit<384> key_t;
 
 typedef bit<4> regAddr2048;
 typedef bit<3> slabId_t;
@@ -79,7 +79,8 @@ struct headers {
 
 // digest data to send to cpu if desired
 struct digest_data_t {
-    bit<184> unused;
+    bit<24> fuzz;
+    bit<160> unused;
     bit<64> eth_src_addr;
     port_t src_port;
 }

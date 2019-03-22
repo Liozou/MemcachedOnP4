@@ -1,5 +1,5 @@
 
-#include "set_key.p4"
+// #include "set_key.p4"
 
 #define REG_READ 8w0
 #define REG_WRITE 8w1
@@ -38,7 +38,7 @@ control MemcachedControl(inout headers hdr,
             drop();
         }
 
-        SetKey.apply(hdr, user_metadata);
+        // SetKey.apply(hdr, user_metadata);
 
         if (memcached_keyvalue.apply().hit) {
             bit<8> opCode = 2; // This value should be before use or it will error
