@@ -39,7 +39,7 @@ class Digest_data(Packet):
         LELongField("unused1", 0),
         LELongField("unused2", 0),
         LEIntField("unused3", 0),
-        X3BytesField("unused4", 0)
+        X3BytesField("fuzz", 0)
     ]
     def mysummary(self):
         return self.sprintf("src_port=%op1% eth_src_addr=%eth_src_addr% unused=%unused%")

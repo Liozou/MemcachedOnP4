@@ -43,20 +43,23 @@ from sss_sume_metadata import *
 tuple_in_file = "Tuple_in.txt"
 tuple_expect_file = "Tuple_expect.txt"
 
-# Diget Data MUST be 80 bits
+# Diget Data MUST be 256 bits
 """ Digest Data:
    src_port       (8 bits)
    eth_src_addr   (64 bits)
-   unused         (184 bits)
+   unused         (160 bits)
+   fuzz           (24 bits)
 """
 
 dig_field_len = collections.OrderedDict()
-dig_field_len['unused'] = 184
+dig_field_len['fuzz'] = 24
+dig_field_len['unused'] = 160
 dig_field_len['eth_src_addr'] = 64
 dig_field_len['src_port'] = 8
 
 #initialize tuple_expect
 dig_tuple_expect = collections.OrderedDict()
+dig_tuple_expect['fuzz'] = 0
 dig_tuple_expect['unused'] = 0
 dig_tuple_expect['eth_src_addr'] = 0
 dig_tuple_expect['src_port'] = 0
