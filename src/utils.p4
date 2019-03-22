@@ -38,17 +38,17 @@
 #define REPEAT_EXP_10(macro) macro(10,1024) REPEAT_EXP_9(macro)
 #define REPEAT_EXP_11(macro) macro(11,2048) REPEAT_EXP_10(macro)
 
-#define _REPEAT_EXP_KEY(macro) REPEAT_EXP_10(macro)
+#define _REPEAT_EXP_KEY(macro) REPEAT_EXP_8(macro)
 #define _REPEAT_EXP_VALUE(macro) REPEAT_EXP_11(macro)
 
 
-#define _REPEAT_KEY(macro) DO_AND_GOTO_NEXT_10(macro)
+#define _REPEAT_KEY(macro) DO_AND_GOTO_NEXT_8(macro)
 #define _REPEAT_VALUE(macro) DO_AND_GOTO_NEXT_11(macro)
 
-#define _REPEAT_KEY_ORDER(macro) GOTO_AND_DO_NEXT_10(macro)
+#define _REPEAT_KEY_ORDER(macro) GOTO_AND_DO_NEXT_8(macro)
 #define _REPEAT_VALUE_ORDER(macro) GOTO_AND_DO_NEXT_11(macro)
 
-#define PARSE_KEY_TOP parse_key_10
+#define PARSE_KEY_TOP parse_key_8
 #define PARSE_VALUE_TOP parse_value_11
 
 #define MAKE_VARBIT_KEY(name, val) header key_##name##_t { bit<val> key; }

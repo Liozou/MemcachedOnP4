@@ -1,4 +1,6 @@
 
+#include "set_key.p4"
+
 #define REG_READ 8w0
 #define REG_WRITE 8w1
 @Xilinx_MaxLatency(1)
@@ -22,16 +24,22 @@ control MemcachedControl(inout headers hdr,
         user_metadata.reg_address = reg_addr;
     }
     table memcached_keyvalue {
-        key = { hdr.key_8.key: exact; } // TODO change
+        key = { user_metadata.key: exact; }
         actions = { set_register_address; }
     }
 
 
     apply {
+        if (hdr.memcached.key_length > 384) {
+            drop();
+        }
         user_metadata.isRequest = (hdr.memcached.magic == 0x80);
         if (!user_metadata.isRequest && hdr.memcached.magic != 0x81) {
             drop();
         }
+
+        SetKey.apply(hdr, user_metadata);
+
         if (memcached_keyvalue.apply().hit) {
             bit<8> opCode = 2; // This value should be before use or it will error
             bool do_reg_operation = false;

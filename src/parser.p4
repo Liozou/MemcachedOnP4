@@ -48,6 +48,7 @@ parser TopParser(packet_in buffer,
         user_metadata.slabID = 0;
         user_metadata.reg_address = 0;
         user_metadata.value_size = 0;
+        user_metadata.key = 0;
         digest_data.src_port = 0;
         digest_data.eth_src_addr = 0;
         digest_data.unused = 0;
