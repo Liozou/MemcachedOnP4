@@ -137,8 +137,11 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached):
                 nf_expected[ind].append(pkt)
 
     if isMemcached:
-        print("Sent Memcached packet")
+        print("Memcached Packet")
         sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('cafffe', 16)
+    else:
+        print("Non-M Packet")
+        sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('abcdef', 16)
 
     # If src MAC address is unknown, send over DMA
     if not src_known:
