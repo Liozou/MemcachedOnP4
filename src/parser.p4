@@ -49,6 +49,7 @@ parser TopParser(packet_in buffer,
         user_metadata.reg_address = 0;
         user_metadata.value_size = 0;
         user_metadata.key = 0;
+        user_metadata.value = 0;
         digest_data.src_port = 0;
         digest_data.eth_src_addr = 0;
         digest_data.unused = 0;
@@ -61,7 +62,13 @@ parser TopParser(packet_in buffer,
 
     state parse_ipv4 {
         buffer.extract(hdr.ipv4);
-        // verify(hdr.ipv4.ihl == 5, error.UnhandledIPv4Options);
+        transition select(hdr.ipv4.ihl) {
+            5: parse_protocol;
+            default: reject; // Unhandled IPv4 options
+        }
+    }
+
+    state parse_protocol {
         transition select(hdr.ipv4.protocol) {
             17: parse_udp;
             default: accept;

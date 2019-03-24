@@ -7,6 +7,7 @@
 typedef bit<48> EthernetAddress;
 typedef bit<8> regAddr_t;
 typedef bit<384> key_t;
+typedef bit<2048> value_t;
 
 typedef bit<4> regAddr2048;
 typedef bit<3> slabId_t;
@@ -86,9 +87,10 @@ struct digest_data_t {
 }
 
 struct user_metadata_t {
-    bool isRequest;
     slabId_t slabID;
     regAddr_t reg_address;
     bit<32> value_size;
     key_t key;
+    value_t value;
+    bool isRequest;
 }

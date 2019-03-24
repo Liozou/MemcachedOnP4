@@ -1,3 +1,5 @@
+#include "generated_macros.p4"
+
 #define _REPEAT_0(macro) macro(1,null)
 #define _REPEAT_1(macro) macro(2,1) _REPEAT_0(macro)
 #define _REPEAT_2(macro) macro(4,2) _REPEAT_1(macro)
@@ -30,7 +32,7 @@
 #define _MAKE_STRUCT_VALUES(n, next) value_##n##_t value_##n;
 #define MAKE_STRUCT_VALUES _REPEAT_VALUE(_MAKE_STRUCT_VALUES)
 
-
+/*
 #define _PARSE_EXTRACT_KEY(n, next)   \
     state parse_extract_key_##n {     \
         buffer.extract(hdr.key_##n);  \
@@ -70,6 +72,17 @@
     state parse_value_null { transition accept; } \
     _REPEAT_VALUE(_PARSE_EXTRACT_VALUE)           \
     _REPEAT_VALUE(_PARSE_VALUE)
+*/
+
+#define PARSE_KEY                                        \
+    state parse_key_null { transition PARSE_VALUE_TOP; } \
+    _PARSE_KEY
+
+#define PARSE_VALUE                               \
+    state parse_value_null { transition accept; } \
+    _PARSE_VALUE
+
+// _PARSE_VALUE and _PARSE_KEY are defined in generated_macros.p4
 
 #define _DEPARSE_KEY(n, next) packet.emit(hdr.key_##n);
 #define DEPARSE_KEY _REPEAT_KEY(_DEPARSE_KEY)

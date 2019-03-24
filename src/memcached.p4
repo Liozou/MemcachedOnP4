@@ -53,8 +53,8 @@ control MemcachedControl(inout headers hdr,
 
             if (do_reg_operation) {
                 if (user_metadata.slabID == 7) {
-                    hdr.value_11.setValid(); // TODO change
-                    slab2048_reg_rw((regAddr2048)user_metadata.reg_address, hdr.value_11.value, opCode, hdr.value_11.value);
+                    hdr.value_2048.setValid(); // TODO change
+                    slab2048_reg_rw((regAddr2048)user_metadata.reg_address, hdr.value_2048.value, opCode, hdr.value_2048.value);
                 }
             }
 
