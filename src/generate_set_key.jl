@@ -23,9 +23,10 @@ end
 function main(file)
   open(file, "w") do f
     println(f, """
-control SetKey(inout headers headers,
+control SetKey(inout headers hdr,
                inout user_metadata_t user_metadata) {
 
+apply {
   if (hdr.key_8.isValid()) {
     if (hdr.key_7.isValid()) {
       user_metadata.key = hdr.key_8.key ++ hdr.key_7.key;
@@ -38,7 +39,7 @@ $(generate_key(9, 1, 6, " ++ hdr.key_8.key"))
 $(generate_key(9, 129, 7, ""))
 
   }
-
+ }
 }
 """)
   end
