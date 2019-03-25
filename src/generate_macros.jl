@@ -22,6 +22,7 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
     state parse_extract_$(key_or_value)_$n {
       buffer.extract(hdr.$(key_or_value)_$n);
       user_metadata.$(key_or_value) = (bit<$max_size>)($(size)hdr.$(key_or_value)_$n.$(key_or_value));
+      digest_data.$(key_or_value)_hash = digest_data.$(key_or_value)_hash ^ ((bit<64>)(hdr.$(key_or_value)_$n.$(key_or_value)));
       transition parse_$(key_or_value)_$next;
     }
 
@@ -31,7 +32,7 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
         _ : parse_$(key_or_value)_$next;
       }
     }
-    """, '\n'), ' ')
+    """, '\n'), "\\\n")
   end
   return ret*'\n'
 end

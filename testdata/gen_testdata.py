@@ -40,7 +40,6 @@ from collections import OrderedDict
 import random
 import sss_sdnet_tuples
 from sss_digest_header import *
-from math import log
 
 ETH_KNOWN = ["08:11:11:11:11:08",
             "08:22:22:22:22:08",
@@ -81,25 +80,33 @@ nf_expected[3] = []
 dma0_expected = []
 
 
-def generate_load(length):
-    load = ''
-    for i in range(length):
-        load += chr(random.randint(0,255))
-    return load
 
 from math import log
 
-def bits_from_int(n):
-    l = []
-    while n!=0:
-        l.append(n%2)
+def bits_from_int(n, size):
+    l = [0] * size
+    for i in range(size):
+        l[-i-1] = n%2
         n/=2
-    return list(reversed(l))
+    return l
 
 def int_from_bits(l):
+    l = list(reversed(l))
     x = 0
     while len(l)!=0:
         x = (x<<1) + l.pop()
+    return x
+
+def bits_from_string(s):
+    l = []
+    for c in s:
+        l.extend(bits_from_int(ord(c), 8))
+    return l
+
+def int_from_string(s):
+    x = 0
+    for c in s:
+        x = (x<<8) + ord(c)
     return x
 
 def generate_obj(l):
@@ -107,34 +114,31 @@ def generate_obj(l):
     l = list(reversed(l))
     while (len(l)%8 != 0):
         l.append(0)
-    assert(len(l)%3==0)
     l = list(reversed(l))
     for i in range(0,len(l)/8):
+        x = 0
         for j in range(0,8):
-            x = (x<<1) + l[-8*i-1-j]
+            x = (x<<1) + l[-8*(i+1)+j]
         load = chr(x) + load
     return load
 
 def compute_simple_hash(obj, max_length=64):
     intobj = 0
-    for c in obj:
-        intobj = (intobj<<8) + ord(c)
-    arrayobj = bits_from_int(intobj)
+    arrayobj = bits_from_string(obj)
     length = len(arrayobj)
-    print "length = ", length
+    assert(length%8==0)
     ret = [0]*max_length
     loglength = int(log(length,2))
-    for i in range(loglength, 2, -1):
-        print "i = ", i
-        if ((length >> (loglength-i)) % 2 == 1):
-            print "poping ", (1<<i), " from ", arrayobj
-            newobj = arrayobj[-(1<<i):len(arrayobj)]
-            for j in range(max_length-1, max(0,max_length-1-(1<<i)), -1):
-                ret[j] = ret[j] ^ arrayobj.pop()
+    for i in range(loglength, -1, -1):
+        if ((length >> i) % 2 == 1):
+            newobj = arrayobj[0:(1<<i)]
+            for j in range(max_length-1, max(-1,max_length-1-(1<<i)), -1):
+                ret[j] = ret[j] ^ newobj[j-max_length+(1<<i)]
+            arrayobj = arrayobj[(1<<i):]
     return int_from_bits(ret)
 
 def test_hash(n):
-    return compute_simple_hash(generate_obj(bits_from_int(n)))
+    return compute_simple_hash(generate_obj(bits_from_int(n, 1+int(log(max(n,1),2)))))
 
 
 class Memcached(Packet):
@@ -144,7 +148,7 @@ class Memcached(Packet):
                  ShortField("key_length",8),
                  ByteField("extras_length",0),
                  ByteField("data_type",0),
-                 IntField("vbucket_id",0),
+                 ShortField("vbucket_id",0),
                  IntField("total_length",60),
                  IntField("opaque",0),
                  LongField("cas",0)]
@@ -153,15 +157,23 @@ def make_memcached_hdr(op, keylen, valuelen):
     hdr = Memcached()
     hdr[Memcached].opcode = op
     hdr[Memcached].key_length = keylen
-    hdr[Memcached].total_length = 24 + keylen + valuelen
+    hdr[Memcached].total_length = keylen + valuelen
     if op=="SET":
         hdr[Memcached].total_length += 8 # for the extras
         hdr[Memcached].extras_length = 8
     return hdr
 
+def generate_load(length):
+    load = ''
+    for i in range(length):
+        load += chr(random.randint(0,255))
+    return load
+
 def make_memcached_pkt(op, keylen, valuelen): # keylen and valuelen are expressed in bytes
-    pkt = make_memcached_hdr(op, keylen, valuelen) / generate_load(keylen + valuelen)
-    return pkt
+    key = generate_load(keylen)
+    value = generate_load(valuelen)
+    pkt = make_memcached_hdr(op, keylen, valuelen) / (key + value)
+    return pkt, key, value
 
 
 
@@ -174,7 +186,7 @@ def applyPkt(pkt, src_ind):
     nf_applied[src_ind].append(pkt)
     pkt_num += 1
 
-def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached):
+def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value):
     pktsExpected.append(pkt)
     # If dst MAC address is unknown, broadcast with src port pruning
     if dst_known:
@@ -187,11 +199,17 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached):
                 nf_expected[ind].append(pkt)
 
     if isMemcached:
-        print("Memcached Packet")
+        hashed_key = compute_simple_hash(key)
+        hashed_value = compute_simple_hash(value)
+        print "Memcached Packet with key = ", int_from_string(key), " (hashed_key = ", hashed_key, ") and value = ", int_from_string(value), " (hashed_value = ", hashed_value, ")"
         sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('cafe', 16)
     else:
-        print("Non-M Packet")
+        hashed_key = 0; hashed_value = 0
+        print "Non-M Packet"
         sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('bbbb', 16)
+
+    sss_sdnet_tuples.dig_tuple_expect['key_hash'] = hashed_key
+    sss_sdnet_tuples.dig_tuple_expect['value_hash'] = hashed_value
 
     # If src MAC address is unknown, send over DMA
     if not src_known:
@@ -255,11 +273,13 @@ for i in range(20):
         dst_MAC = ETH_UNKNOWN[dst_ind]
 
     if isMemcached:
-        pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211) / make_memcached_pkt("GET", 8, 12)
+        memcachedPkt, key, value = make_memcached_pkt("GET", random.randint(1,48), random.randint(1,256))
+        pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211) / memcachedPkt
     else:
+        key = 0; value = 0
         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / TCP()
     pkt = pad_pkt(pkt, 64)
     applyPkt(pkt, src_ind)
-    expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached)
+    expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
 
 write_pcap_files()
