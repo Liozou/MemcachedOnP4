@@ -198,7 +198,10 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached):
         sss_sdnet_tuples.sume_tuple_expect['dst_port'] = sss_sdnet_tuples.sume_tuple_expect['dst_port']
         src_port = portMap[src_ind]
         eth_src_addr = int(pkt[Ether].src.replace(':',''),16)
-        digest_pkt = pad_pkt(Digest_data(src_port=src_port, eth_src_addr=eth_src_addr), 10) # pad to 10 bytes (80 bits)
+        if isMemcached:
+            digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('feca', 16)) # This has to be inverted for some reason
+        else:
+            digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('bbbb', 16))
         dma0_expected.append(digest_pkt)
         sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 1
         sss_sdnet_tuples.dig_tuple_expect['src_port'] = src_port
