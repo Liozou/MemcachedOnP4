@@ -45,22 +45,34 @@ tuple_expect_file = "Tuple_expect.txt"
 
 # Diget Data MUST be 256 bits
 """ Digest Data:
-   src_port       (8 bits)
+   fuzz           (16 bits)
+   unused1        (16 bits)
+   key_hash       (64 bits)
+   unused2        (8 bits)
+   value_hash     (64 bits)
+   unused3         (16 bits)
    eth_src_addr   (64 bits)
-   unused         (160 bits)
-   fuzz           (24 bits)
+   src_port       (8 bits)
 """
 
 dig_field_len = collections.OrderedDict()
-dig_field_len['fuzz'] = 24
-dig_field_len['unused'] = 160
+dig_field_len['fuzz'] = 16
+dig_field_len['unused1'] = 16
+dig_field_len['key_hash'] = 64
+dig_field_len['unused2'] = 8
+dig_field_len['value_hash'] = 64
+dig_field_len['unused3'] = 16
 dig_field_len['eth_src_addr'] = 64
 dig_field_len['src_port'] = 8
 
 #initialize tuple_expect
 dig_tuple_expect = collections.OrderedDict()
 dig_tuple_expect['fuzz'] = 0
-dig_tuple_expect['unused'] = 0
+dig_tuple_expect['unused1'] = 0
+dig_tuple_expect['key_hash'] = 0
+dig_tuple_expect['unused2'] = 0
+dig_tuple_expect['value_hash'] = 0
+dig_tuple_expect['unused3'] = 0
 dig_tuple_expect['eth_src_addr'] = 0
 dig_tuple_expect['src_port'] = 0
 

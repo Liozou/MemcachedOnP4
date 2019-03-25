@@ -50,6 +50,9 @@ smac_tbl = {}
 
 def learn_digest(pkt):
     dig_pkt = Digest_data(str(pkt))
+    print "\n\n\n\n\n\n\n"
+    pkt.show()
+    print "\n\n\n\n\n\n\n"
     if len(dig_pkt) != DIG_PKT_LEN:
         return
     print "Received Digest packet: "

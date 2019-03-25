@@ -45,11 +45,11 @@ header udp_t {
 header memcached_t {
     bit<8> magic;
     bit<8> opcode;
-    bit<16> key_length;
-    bit<8> extras_length;
+    bit<16> key_length;   // in bytes
+    bit<8> extras_length; // in bytes
     bit<8> data_type;
     bit<16> vbucket_id;
-    bit<32> total_length;
+    bit<32> total_body;   // length of extras + key + value, in bytes
     bit<32> opaque;
     bit<64> CAS;
 }
@@ -80,8 +80,12 @@ struct headers {
 
 // digest data to send to cpu if desired
 struct digest_data_t {
-    bit<24> fuzz;
-    bit<160> unused;
+    bit<16> fuzz;
+    bit<16> unused1;
+    bit<64> key_hash;
+    bit<8> unused2;
+    bit<64> value_hash;
+    bit<16> unused3;
     bit<64> eth_src_addr;
     port_t src_port;
 }

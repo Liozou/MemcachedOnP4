@@ -4,10 +4,10 @@
 # Copyright (c) 2017 Stephen Ibanez
 # All rights reserved.
 #
-# This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+# This software was developed by Stanford University and the University of Cambridge Computer Laboratory
 # under National Science Foundation under Grant No. CNS-0855268,
 # the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 # as part of the DARPA MRC research programme.
 #
 # @NETFPGA_LICENSE_HEADER_START@
@@ -40,6 +40,7 @@ from collections import OrderedDict
 import random
 import sss_sdnet_tuples
 from sss_digest_header import *
+from math import log
 
 ETH_KNOWN = ["08:11:11:11:11:08",
             "08:22:22:22:22:08",
@@ -86,6 +87,55 @@ def generate_load(length):
         load += chr(random.randint(0,255))
     return load
 
+from math import log
+
+def bits_from_int(n):
+    l = []
+    while n!=0:
+        l.append(n%2)
+        n/=2
+    return list(reversed(l))
+
+def int_from_bits(l):
+    x = 0
+    while len(l)!=0:
+        x = (x<<1) + l.pop()
+    return x
+
+def generate_obj(l):
+    load = ""
+    l = list(reversed(l))
+    while (len(l)%8 != 0):
+        l.append(0)
+    assert(len(l)%3==0)
+    l = list(reversed(l))
+    for i in range(0,len(l)/8):
+        for j in range(0,8):
+            x = (x<<1) + l[-8*i-1-j]
+        load = chr(x) + load
+    return load
+
+def compute_simple_hash(obj, max_length=64):
+    intobj = 0
+    for c in obj:
+        intobj = (intobj<<8) + ord(c)
+    arrayobj = bits_from_int(intobj)
+    length = len(arrayobj)
+    print "length = ", length
+    ret = [0]*max_length
+    loglength = int(log(length,2))
+    for i in range(loglength, 2, -1):
+        print "i = ", i
+        if ((length >> (loglength-i)) % 2 == 1):
+            print "poping ", (1<<i), " from ", arrayobj
+            newobj = arrayobj[-(1<<i):len(arrayobj)]
+            for j in range(max_length-1, max(0,max_length-1-(1<<i)), -1):
+                ret[j] = ret[j] ^ arrayobj.pop()
+    return int_from_bits(ret)
+
+def test_hash(n):
+    return compute_simple_hash(generate_obj(bits_from_int(n)))
+
 
 class Memcached(Packet):
     name = "MemcachedPacket "
@@ -109,7 +159,7 @@ def make_memcached_hdr(op, keylen, valuelen):
         hdr[Memcached].extras_length = 8
     return hdr
 
-def make_memcached_pkt(op, keylen, valuelen):
+def make_memcached_pkt(op, keylen, valuelen): # keylen and valuelen are expressed in bytes
     pkt = make_memcached_hdr(op, keylen, valuelen) / generate_load(keylen + valuelen)
     return pkt
 
@@ -138,10 +188,10 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached):
 
     if isMemcached:
         print("Memcached Packet")
-        sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('cafffe', 16)
+        sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('cafe', 16)
     else:
         print("Non-M Packet")
-        sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('abcdef', 16)
+        sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('bbbb', 16)
 
     # If src MAC address is unknown, send over DMA
     if not src_known:
@@ -210,5 +260,3 @@ for i in range(20):
     expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached)
 
 write_pcap_files()
-
-

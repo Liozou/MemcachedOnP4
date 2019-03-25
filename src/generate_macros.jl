@@ -4,9 +4,9 @@
 function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_length", max_size=384, max_n=256)
   ret = "#define _PARSE_$(uppercase(key_or_value)) "
   max_k = Int(log2(max_n))
-  for k in 0:max_k
+  for k in 3:max_k # The 3-offset comes from the fact that sizes are expressed in bytes
     n = 2^k
-    next = k==0 ? "null" : string(2^(k-1))
+    next = k==3 ? "null" : string(2^(k-1))
     bit_size = 0
 
     if k!=max_k
@@ -26,7 +26,7 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
     }
 
     state parse_$(key_or_value)_$n {
-      transition select($length[$k:$k]) {
+      transition select($length[$(k-3):$(k-3)]) {
         1 : parse_extract_$(key_or_value)_$n;
         _ : parse_$(key_or_value)_$next;
       }

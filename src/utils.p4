@@ -1,9 +1,10 @@
 #include "generated_macros.p4"
 
-#define _REPEAT_0(macro) macro(1,null)
-#define _REPEAT_1(macro) macro(2,1) _REPEAT_0(macro)
-#define _REPEAT_2(macro) macro(4,2) _REPEAT_1(macro)
-#define _REPEAT_3(macro) macro(8,4) _REPEAT_2(macro)
+// #define _REPEAT_0(macro) macro(1,null)
+// #define _REPEAT_1(macro) macro(2,1) _REPEAT_0(macro)
+// #define _REPEAT_2(macro) macro(4,2) _REPEAT_1(macro)
+// #define _REPEAT_3(macro) macro(8,4) _REPEAT_2(macro)
+#define _REPEAT_3(macro) macro(8,null)
 #define _REPEAT_4(macro) macro(16,8) _REPEAT_3(macro)
 #define _REPEAT_5(macro) macro(32,16) _REPEAT_4(macro)
 #define _REPEAT_6(macro) macro(64,32) _REPEAT_5(macro)
