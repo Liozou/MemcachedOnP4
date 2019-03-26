@@ -50,13 +50,16 @@ parser TopParser(packet_in buffer,
         user_metadata.value_size = 0;
         user_metadata.key = 0;
         user_metadata.value = 0;
+        user_metadata.flags = 0;
         digest_data.src_port = 0;
         digest_data.eth_src_addr = 0;
         digest_data.unused1 = 0;
-        digest_data.unused2 = 0;
-        digest_data.unused3 = 0;
         digest_data.key_hash = 0;
+        digest_data.unused2 = 0;
         digest_data.value_hash = 0;
+        store_new_key = false;
+        remove_this_key = false;
+        digest_data.unused3 = 0;
         digest_data.fuzz = 0xbbbb;
         transition select(hdr.ethernet.etherType) {
             0x0800: parse_ipv4;
@@ -91,8 +94,9 @@ parser TopParser(packet_in buffer,
         buffer.extract(hdr.memcached);
         digest_data.fuzz = 0xcafe;
         user_metadata.value_size = (bit<32>)(hdr.memcached.total_body - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length));
+        user_metadata.isRequest = (hdr.memcached.magic == 0x80);
         transition select(hdr.memcached.extras_length) {
-            0:  PARSE_KEY_TOP;
+            0: PARSE_KEY_TOP;
             4: parse_extras_32;
             8: parse_extras_64;
             default: reject;
@@ -109,7 +113,8 @@ parser TopParser(packet_in buffer,
         transition PARSE_KEY_TOP;
     }
 
+    PARSE_KEY
+
     PARSE_VALUE
 
-    PARSE_KEY
 }

@@ -273,7 +273,7 @@ for i in range(20):
         dst_MAC = ETH_UNKNOWN[dst_ind]
 
     if isMemcached:
-        memcachedPkt, key, value = make_memcached_pkt("GET", random.randint(1,48), random.randint(1,256))
+        memcachedPkt, key, value = make_memcached_pkt("GET", random.randint(1,48), random.randint(1,16)) # random.randint(1,255))
         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211) / memcachedPkt
     else:
         key = 0; value = 0

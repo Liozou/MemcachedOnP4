@@ -4,19 +4,23 @@
 // example "psa-example-incremental-checksum2".
 
 
-typedef bit<48> EthernetAddress;
 typedef bit<8> regAddr_t;
 typedef bit<384> key_t;
-typedef bit<2048> value_t;
+typedef bit<2040> value_t;
 
-typedef bit<4> regAddr2048;
-typedef bit<3> slabId_t;
+// typedef bit<1> regAddr2040;
+// typedef bit<1> regAddr1024;
+// typedef bit<1> regAddr512;
+// typedef bit<1> regAddr256;
+typedef bit<7> regAddr128;
+// Note: Size of one BRAM tile = 32768 bits (32kb)
+// 2^7 * 128 = 32768 / 2 so slab128 takes half a tile
 
 
 // standard Ethernet header
 header ethernet_t {
-    EthernetAddress dstAddr;
-    EthernetAddress srcAddr;
+    bit<48> dstAddr;
+    bit<48> srcAddr;
     bit<16> etherType;
 }
 
@@ -85,16 +89,19 @@ struct digest_data_t {
     bit<64> key_hash;
     bit<8> unused2;
     bit<64> value_hash;
-    bit<16> unused3;
+    bool store_new_key;
+    bool remove_this_key;
+    bit<14> unused3;
     bit<64> eth_src_addr;
     port_t src_port;
 }
 
 struct user_metadata_t {
-    slabId_t slabID;
+    bit<32> value_size;    // in bytes
     regAddr_t reg_address;
-    bit<32> value_size;
+    bit<8> value_size_out; // in bytes
+    bit<32> flags;
+    bool isRequest;
     key_t key;
     value_t value;
-    bool isRequest;
 }

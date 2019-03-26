@@ -37,9 +37,26 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
   return ret*'\n'
 end
 
+function generate_repopulate_value(max_n=1024)
+  ret = "#define REPOPULATE_VALUE "
+  max_k = Int(log2(max_n))
+  for k in 3:max_k
+    n = 2^k
+    ret *= join(split("""
+    if (user_metadata.value_size_out[$(k-3):$(k-3)] == 1) {
+      hdr.value_$n.value = (bit<$n>)user_metadata.value;
+      hdr.value_$n.setValid();
+      $(k!=max_k ? "user_metadata.value = (user_metadata.value >> $k);" : "")
+    }
+    """, '\n'), "\\\n")
+  end
+  return ret*'\n'
+end
+
 function main(file)
   open(file, "w") do f
-    println(f, generate_parse_extract())
-    println(f, generate_parse_extract("value", "user_metadata.value_size", 2048, 2048))
+    println(f, generate_parse_extract("key", "hdr.memcached.key_length", 384, 256))
+    println(f, generate_parse_extract("value", "user_metadata.value_size", 2040, 1024))
+    println(f, generate_repopulate_value(1024))
   end
 end
