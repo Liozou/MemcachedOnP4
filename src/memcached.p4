@@ -38,7 +38,6 @@ control MemcachedControl(inout headers hdr,
     table memcached_keyvalue {
         key = { user_metadata.key: exact; }
         actions = { set_stored_info; }
-        default_action = set_stored_info(0, 0, 13) // REMOVEME, for debugging only
     }
 
     /* register_address_##n : no argument, returns an available register address
@@ -49,7 +48,7 @@ control MemcachedControl(inout headers hdr,
     action set_register_address(regAddr_t reg_addr) {
         user_metadata.reg_address = reg_addr;
     }
-    table register_address_128  { actions = { set_register_address; } size=1; const default_action = set_register_address(0); }
+    table register_address_128  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; }}
     /*
     table register_address_256  { actions = { set_register_address; } size=1; }
     table register_address_512  { actions = { set_register_address; } size=1; }
@@ -76,24 +75,24 @@ control MemcachedControl(inout headers hdr,
         if ((user_metadata.isRequest && OP_IS_SET) ||
            (!user_metadata.isRequest && OP_IS_GETK)) {
 
-            bit<8> _value_size_in = (bit<8>) user_metadata.value_size;
-            _value_size_in = _value_size_in | (_value_size_in >> 1);
-            _value_size_in = _value_size_in | (_value_size_in >> 2);
-            _value_size_in = _value_size_in | (_value_size_in >> 4);
-            bit<8> _value_size_out = user_metadata.value_size_out;
-            _value_size_out = _value_size_out | (_value_size_out >> 1);
-            _value_size_out = _value_size_out | (_value_size_out >> 2);
-            _value_size_out = _value_size_out | (_value_size_out >> 4);
+            bit<8> x_value_size_in = (bit<8>) user_metadata.value_size;
+            x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
+            x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
+            x_value_size_in = x_value_size_in | (x_value_size_in >> 4);
+            bit<8> x_value_size_out = user_metadata.value_size_out;
+            x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
+            x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
+            x_value_size_out = x_value_size_out | (x_value_size_out >> 4);
 
-            reg_opcode = REG_WRITE
-            if (_value_size_in != _value_size_out) {
+            reg_opcode = REG_WRITE;
+            if (x_value_size_in != x_value_size_out) {
                 /* This will be executed either if memcached_keyvalue was a miss
                  * (because then value_size_out = 0) or if it was a hit but the
                  * stored value is not in the same slab as the new value.
                  * Indeed, _value_size_in == _value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
-                user_metadata.value_size_out = user_metadata.value_size;
+                user_metadata.value_size_out = (bit<8>)user_metadata.value_size;
                 if (user_metadata.value_size <= 16) { register_address_128.apply(); }
                 /*
                 else if (user_metadata.value_size <= 32) { register_address_256.apply(); }
@@ -106,7 +105,7 @@ control MemcachedControl(inout headers hdr,
             }
 
             if (!user_metadata.isRequest && OP_IS_GETK) {
-                hdr.memcached.opcode = 0x00 // Seems authorized by BinaryProtocolRevamped even for GETK
+                hdr.memcached.opcode = 0x00; // Seems authorized by BinaryProtocolRevamped even for GETK
                 // Past this point, OP_IS_GETK merges with OP_IS_GET if the packet is a response
             }
 
@@ -123,15 +122,15 @@ control MemcachedControl(inout headers hdr,
              * between 1 and 255, hence it is stored on 8 bits.
              */
             if (user_metadata.value_size_out <= 16) {
-                slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, (bit<128>)user_metadata.value);
+                slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
             }
             /*
             else if (user_metadata.value_size_out <= 32) {
-                slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, (bit<256>)user_metadata.value);
+                slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, user_metadata.value[255:0]);
             } else if (user_metadata.value_size_out <= 64) {
-                slab512_reg_rw((regAddr512)user_metadata.reg_address, (bit<512>)user_metadata.value, reg_opcode, (bit<512>)user_metadata.value);
+                slab512_reg_rw((regAddr512)user_metadata.reg_address, (bit<512>)user_metadata.value, reg_opcode, user_metadata.value[511:0]);
             } else if (user_metadata.value_size_out <= 128) {
-                slab1024_reg_rw((regAddr1024)user_metadata.reg_address, (bit<1024>)user_metadata.value, reg_opcode, (bit<1024>)user_metadata.value);
+                slab1024_reg_rw((regAddr1024)user_metadata.reg_address, (bit<1024>)user_metadata.value, reg_opcode, user_metadata.value[1023:0]);
             } else { // 128 < value_size_out <= 255
                 slab2040_reg_rw((regAddr2040)user_metadata.reg_address, user_metadata.value, reg_opcode, user_metadata.value);
             }
@@ -147,15 +146,15 @@ control MemcachedControl(inout headers hdr,
                     hdr.extras_flags.setValid();
                     hdr.extras_flags.flags = user_metadata.flags;
                     if (OP_IS_GETK) {
-                        hdr.memcached.total_body = user_metadata.value_size_out + hdr.memcached.key_length + 4
+                        hdr.memcached.total_body = (bit<32>)((bit<16>)user_metadata.value_size_out + hdr.memcached.key_length + 4);
                     } else {
                         UNSET_KEY
-                        hdr.memcached.total_body = user_metadata.value_size_out + 4
+                        hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
                     }
                     hdr.memcached.magic = 0x81; // Returning a response packet
                     hdr.memcached.vbucket_id = 0; // No error
                 } else {
-                    hdr.memcached.opcode = 0x0c // GETK
+                    hdr.memcached.opcode = 0x0c; // GETK
                     // TODO send to the server
                 }
             }

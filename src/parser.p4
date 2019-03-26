@@ -45,9 +45,9 @@ parser TopParser(packet_in buffer,
     state start {
         buffer.extract(hdr.ethernet);
         user_metadata.isRequest = false;
-        user_metadata.slabID = 0;
         user_metadata.reg_address = 0;
         user_metadata.value_size = 0;
+        user_metadata.value_size_out = 0;
         user_metadata.key = 0;
         user_metadata.value = 0;
         user_metadata.flags = 0;
@@ -57,8 +57,8 @@ parser TopParser(packet_in buffer,
         digest_data.key_hash = 0;
         digest_data.unused2 = 0;
         digest_data.value_hash = 0;
-        store_new_key = false;
-        remove_this_key = false;
+        digest_data.store_new_key = false;
+        digest_data.remove_this_key = false;
         digest_data.unused3 = 0;
         digest_data.fuzz = 0xbbbb;
         transition select(hdr.ethernet.etherType) {

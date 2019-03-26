@@ -45,7 +45,7 @@
 // _PARSE_VALUE and _PARSE_KEY are defined in generated_macros.p4
 
 
-#define _UNSET_KEY(n, next) hdr.key_##n##.setInvalid();
+#define _UNSET_KEY(n, next) hdr.key_##n.setInvalid();
 #define UNSET_KEY _REPEAT_KEY(_UNSET_KEY)
 
 #define _DEPARSE_KEY(n, next) packet.emit(hdr.key_##n);

@@ -19,4 +19,4 @@ testdata/*.axi
 testdata/*.txt
 testdata/*.pcap
 testdata/*.pyc
-
+testdata/SimpleSumeSwitch_extern_defines.json
