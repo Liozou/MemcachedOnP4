@@ -10,13 +10,12 @@
 //                             in bit<8> opCode,
 //                             out bit<2047> result);
 
-@Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(128)
-extern void slab128_reg_rw(in regAddr128 index,
-                            in bit<128> newVal,
-                            in bit<8> opCode,
-                            out bit<128> result);
-
+// @Xilinx_MaxLatency(1)
+// @Xilinx_ControlWidth(128)
+// extern void slab128_reg_rw(in regAddr128 index,
+//                             in bit<128> newVal,
+//                             in bit<8> opCode,
+//                             out bit<128> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -29,7 +28,7 @@ control MemcachedControl(inout headers hdr,
      * flags.
      * The values are not directly stored in the tables because of their size.
      */
-
+/*
     action set_stored_info(regAddr_t reg_addr, bit<32> flags, bit<8> value_size) {
         user_metadata.reg_address = reg_addr;
         user_metadata.flags = flags;
@@ -39,16 +38,17 @@ control MemcachedControl(inout headers hdr,
         key = { user_metadata.key: exact; }
         actions = { set_stored_info; }
     }
-
+*/
     /* register_address_##n : no argument, returns an available register address
      * for slab n.
      * Note that the address overwrites that set by memcached_keyvalue.
      */
-
+/*
     action set_register_address(regAddr_t reg_addr) {
         user_metadata.reg_address = reg_addr;
     }
     table register_address_128  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; }}
+*/
     /*
     table register_address_256  { actions = { set_register_address; } size=1; }
     table register_address_512  { actions = { set_register_address; } size=1; }
@@ -66,7 +66,10 @@ control MemcachedControl(inout headers hdr,
             DROP
         }
 
+        bool is_stored_key = false;
+/*
         bool is_stored_key = memcached_keyvalue.apply().hit;
+*/
 
         bool do_reg_operation = OP_IS_GET || OP_IS_GETK || (user_metadata.isRequest && OP_IS_SET);
 
@@ -93,7 +96,9 @@ control MemcachedControl(inout headers hdr,
                  * value_size_out and value_size have the same highest set bit.
                  */
                 user_metadata.value_size_out = (bit<8>)user_metadata.value_size;
+/*
                 if (user_metadata.value_size <= 16) { register_address_128.apply(); }
+*/
                 /*
                 else if (user_metadata.value_size <= 32) { register_address_256.apply(); }
                 else if (user_metadata.value_size <= 64) { register_address_512.apply(); }
@@ -121,9 +126,11 @@ control MemcachedControl(inout headers hdr,
              * 2040 bits = 255 bytes, value_size_out can only take values
              * between 1 and 255, hence it is stored on 8 bits.
              */
+/*
             if (user_metadata.value_size_out <= 16) {
                 slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
             }
+*/
             /*
             else if (user_metadata.value_size_out <= 32) {
                 slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, user_metadata.value[255:0]);
@@ -154,7 +161,7 @@ control MemcachedControl(inout headers hdr,
                     hdr.memcached.magic = 0x81; // Returning a response packet
                     hdr.memcached.vbucket_id = 0; // No error
                 } else {
-                    hdr.memcached.opcode = 0x0c; // GETK
+                    // hdr.memcached.opcode = 0x0c; // GETK
                     // TODO send to the server
                 }
             }

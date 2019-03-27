@@ -35,7 +35,7 @@
 
 
 // Parser Implementation
-@Xilinx_MaxPacketRegion(16384)
+// @Xilinx_MaxPacketRegion(16384)
 parser TopParser(packet_in buffer,
                  out headers hdr,
                  out user_metadata_t user_metadata,

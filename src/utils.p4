@@ -1,25 +1,13 @@
 #include "generated_macros.p4"
 
-// #define _REPEAT_0(macro) macro(1,null)
-// #define _REPEAT_1(macro) macro(2,1) _REPEAT_0(macro)
-// #define _REPEAT_2(macro) macro(4,2) _REPEAT_1(macro)
-// #define _REPEAT_3(macro) macro(8,4) _REPEAT_2(macro)
-#define _REPEAT_3(macro) macro(8,null)
-#define _REPEAT_4(macro) macro(16,8) _REPEAT_3(macro)
-#define _REPEAT_5(macro) macro(32,16) _REPEAT_4(macro)
-#define _REPEAT_6(macro) macro(64,32) _REPEAT_5(macro)
-#define _REPEAT_7(macro) macro(128,64) _REPEAT_6(macro)
-#define _REPEAT_8(macro) macro(256,128) _REPEAT_7(macro)
-#define _REPEAT_9(macro) macro(512,256) _REPEAT_8(macro)
-#define _REPEAT_10(macro) macro(1024,512) _REPEAT_9(macro)
-//#define _REPEAT_11(macro) macro(2048,1024) _REPEAT_10(macro)
+/* The following commented macros are defined in generated_macros.p4 */
 
-#define _REPEAT_KEY(macro) _REPEAT_8(macro)
-#define _REPEAT_VALUE(macro) _REPEAT_10(macro)
-
-
-#define PARSE_KEY_TOP parse_key_256
-#define PARSE_VALUE_TOP parse_value_1024
+// #define _REPEAT_KEY(macro) _REPEAT_8(macro)
+// #define _REPEAT_VALUE(macro) _REPEAT_10(macro)
+// #define PARSE_KEY_TOP parse_key_256
+// #define PARSE_VALUE_TOP parse_value_1024
+// #define _PARSE_VALUE
+// #define _PARSE_KEY
 
 
 #define _MAKE_KEY_T(n, next) header key_##n##_t { bit<n> key; }
@@ -41,8 +29,6 @@
 #define PARSE_VALUE                               \
     state parse_value_null { transition accept; } \
     _PARSE_VALUE
-
-// _PARSE_VALUE and _PARSE_KEY are defined in generated_macros.p4
 
 
 #define _UNSET_KEY(n, next) hdr.key_##n.setInvalid();

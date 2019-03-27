@@ -83,7 +83,7 @@ control TopPipe(inout headers hdr,
 
 
 // Deparser Implementation
-@Xilinx_MaxPacketRegion(16384)
+// @Xilinx_MaxPacketRegion(16384)
 control TopDeparser(packet_out packet,
                     in headers hdr,
                     in user_metadata_t user_metadata,
