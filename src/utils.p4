@@ -1,25 +1,15 @@
 #include "generated_macros.p4"
 
-// #define _REPEAT_0(macro) macro(1,null)
-// #define _REPEAT_1(macro) macro(2,1) _REPEAT_0(macro)
-// #define _REPEAT_2(macro) macro(4,2) _REPEAT_1(macro)
-// #define _REPEAT_3(macro) macro(8,4) _REPEAT_2(macro)
-#define _REPEAT_3(macro) macro(8,null)
-#define _REPEAT_4(macro) macro(16,8) _REPEAT_3(macro)
-#define _REPEAT_5(macro) macro(32,16) _REPEAT_4(macro)
-#define _REPEAT_6(macro) macro(64,32) _REPEAT_5(macro)
-#define _REPEAT_7(macro) macro(128,64) _REPEAT_6(macro)
-#define _REPEAT_8(macro) macro(256,128) _REPEAT_7(macro)
-#define _REPEAT_9(macro) macro(512,256) _REPEAT_8(macro)
-#define _REPEAT_10(macro) macro(1024,512) _REPEAT_9(macro)
-//#define _REPEAT_11(macro) macro(2048,1024) _REPEAT_10(macro)
+/* The following commented macros are defined in generated_macros.p4 */
 
-#define _REPEAT_KEY(macro) _REPEAT_8(macro)
-#define _REPEAT_VALUE(macro) _REPEAT_10(macro)
-
-
-#define PARSE_KEY_TOP parse_key_256
-#define PARSE_VALUE_TOP parse_value_1024
+// #define _REPEAT_KEY(macro) _REPEAT_8(macro)
+// #define _REPEAT_VALUE(macro) _REPEAT_10(macro)
+// #define PARSE_KEY_TOP parse_key_256
+// #define PARSE_VALUE_TOP parse_value_1024
+// #define INTERNAL_KEY_SIZE 384
+// #define INTERNAL_VALUE_SIZE 2040
+// #define _PARSE_VALUE
+// #define _PARSE_KEY
 
 
 #define _MAKE_KEY_T(n, next) header key_##n##_t { bit<n> key; }
@@ -42,8 +32,6 @@
     state parse_value_null { transition accept; } \
     _PARSE_VALUE
 
-// _PARSE_VALUE and _PARSE_KEY are defined in generated_macros.p4
-
 
 #define _UNSET_KEY(n, next) hdr.key_##n.setInvalid();
 #define UNSET_KEY _REPEAT_KEY(_UNSET_KEY)
@@ -55,6 +43,13 @@
 
 
 #define DROP {sume_metadata.dst_port = 0; return;}
+
+
+#define INDEX_WIDTH_SLAB_128 8
+#define INDEX_WIDTH_SLAB_256 7
+#define INDEX_WIDTH_SLAB_512 6
+#define INDEX_WIDTH_SLAB_1024 5
+#define INDEX_WIDTH_SLAB_2040 4
 
 #define OP_IS_GET (hdr.memcached.opcode==0x00)
 #define OP_IS_SET (hdr.memcached.opcode==0x01)

@@ -217,9 +217,9 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
         src_port = portMap[src_ind]
         eth_src_addr = int(pkt[Ether].src.replace(':',''),16)
         if isMemcached:
-            digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('feca', 16)) # This has to be inverted for some reason
+            digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('feca', 16), key_hash=hashed_key, value_hash=hashed_value) # This has to be inverted for some reason
         else:
-            digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('bbbb', 16))
+            digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('bbbb', 16), key_hash=hashed_key, value_hash=hashed_value)
         dma0_expected.append(digest_pkt)
         sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 1
         sss_sdnet_tuples.dig_tuple_expect['src_port'] = src_port
@@ -273,7 +273,7 @@ for i in range(20):
         dst_MAC = ETH_UNKNOWN[dst_ind]
 
     if isMemcached:
-        memcachedPkt, key, value = make_memcached_pkt("GET", random.randint(1,48), random.randint(1,16)) # random.randint(1,255))
+        memcachedPkt, key, value = make_memcached_pkt("GET", random.randint(1,13), random.randint(1,15)) # random.randint(1,255))
         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211) / memcachedPkt
     else:
         key = 0; value = 0

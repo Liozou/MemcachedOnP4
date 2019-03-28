@@ -1,3 +1,21 @@
+#define _REPEAT_3(macro) macro(8,null)
+#define _REPEAT_4(macro) macro(16,8) _REPEAT_3(macro)
+#define _REPEAT_5(macro) macro(32,16) _REPEAT_4(macro)
+#define _REPEAT_6(macro) macro(64,32) _REPEAT_5(macro)
+#define _REPEAT_7(macro) macro(128,64) _REPEAT_6(macro)
+#define _REPEAT_8(macro) macro(256,128) _REPEAT_7(macro)
+#define _REPEAT_9(macro) macro(512,256) _REPEAT_8(macro)
+#define _REPEAT_10(macro) macro(1024,512) _REPEAT_9(macro)
+
+#define _REPEAT_KEY(macro) _REPEAT_8(macro)
+#define _REPEAT_VALUE(macro) _REPEAT_10(macro)
+
+#define PARSE_KEY_TOP parse_key_256
+#define PARSE_VALUE_TOP parse_value_1024
+
+#define INTERNAL_KEY_SIZE 384
+#define INTERNAL_VALUE_SIZE 2040
+
 #define _PARSE_KEY state parse_extract_key_8 {\
   buffer.extract(hdr.key_8);\
   user_metadata.key = (bit<384>)(((bit<368>)user_metadata.key) ++ hdr.key_8.key);\
