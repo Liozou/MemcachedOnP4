@@ -47,7 +47,7 @@ control MemcachedControl(inout headers hdr,
     action set_register_address(regAddr_t reg_addr) {
         user_metadata.reg_address = reg_addr;
     }
-    table register_address  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; } size = 8; }
+    table register_address  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; } size = 64; }
 
 
     apply {
