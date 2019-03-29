@@ -31,7 +31,6 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
     state parse_extract_$(key_or_value)_$n {
       buffer.extract(hdr.$(key_or_value)_$n);
       user_metadata.$(key_or_value) = (bit<$max_size>)($(size)hdr.$(key_or_value)_$n.$(key_or_value));
-      digest_data.$(key_or_value)_hash = digest_data.$(key_or_value)_hash ^ ((bit<64>)(hdr.$(key_or_value)_$n.$(key_or_value)));
       transition parse_$(key_or_value)_$next;
     }
 
@@ -67,8 +66,8 @@ function main(file)
   # size_key  = 384
   # n_val_max = 1024
   # size_val  = 2040
-  n_key_max = 128
-  size_key  = 248
+  n_key_max = 32
+  size_key  = 56
   n_val_max = 128
   size_val  = 248
   k_key_max = Int(log2(n_key_max))
@@ -78,8 +77,12 @@ function main(file)
     println(f, """
     #define _REPEAT_KEY(macro) _REPEAT_$k_key_max(macro)
     #define _REPEAT_VALUE(macro) _REPEAT_$k_val_max(macro)
+
     #define PARSE_KEY_TOP parse_key_$n_key_max
     #define PARSE_VALUE_TOP parse_value_$n_val_max
+
+    #define INTERNAL_KEY_SIZE $size_key
+    #define INTERNAL_VALUE_SIZE $size_val
     """)
     println(f, generate_parse_extract("key", "hdr.memcached.key_length", size_key, n_key_max))
     println(f, generate_parse_extract("value", "user_metadata.value_size", size_val, n_val_max))

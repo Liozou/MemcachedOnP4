@@ -47,14 +47,7 @@ control MemcachedControl(inout headers hdr,
     action set_register_address(regAddr_t reg_addr) {
         user_metadata.reg_address = reg_addr;
     }
-    table register_address_128  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; }}
-
-    /*
-    table register_address_256  { actions = { set_register_address; } size=1; }
-    table register_address_512  { actions = { set_register_address; } size=1; }
-    table register_address_1024 { actions = { set_register_address; } size=1; }
-    table register_address_2040 { actions = { set_register_address; } size=1; }
-    */
+    table register_address  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; } size = 8; }
 
 
     apply {
@@ -95,14 +88,15 @@ control MemcachedControl(inout headers hdr,
                  */
                 user_metadata.value_size_out = (bit<8>)user_metadata.value_size;
 
-                if (user_metadata.value_size <= 16) { register_address_128.apply(); }
-
+                if (user_metadata.value_size <= 16) { hdr.memcached.data_type = 1; }
                 /*
-                else if (user_metadata.value_size <= 32) { register_address_256.apply(); }
-                else if (user_metadata.value_size <= 64) { register_address_512.apply(); }
-                else if (user_metadata.value_size <= 128) { register_address_1024.apply(); }
-                else { register_address_2040.apply(); }
+                else if (user_metadata.value_size <= 32) { hdr.memcached.data_type = 2; }
+                else if (user_metadata.value_size <= 64) { hdr.memcached.data_type = 3; }
+                else if (user_metadata.value_size <= 128) { hdr.memcached.data_type = 4; }
+                else { hdr.memcached.data_type = 5; }
                 */
+                register_address.apply();
+                hdr.memcached.data_type = 0;
                 digest_data.store_new_key = true;
                 digest_data.remove_this_key = is_stored_key;
             }
