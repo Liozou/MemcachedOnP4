@@ -63,10 +63,15 @@ function generate_repopulate_value(max_n=1024)
 end
 
 function main(file)
+
+  # n_key_max = 256
+  # size_key  = 384
+  # n_val_max = 1024
+  # size_val  = 2040
   n_key_max = 256
   size_key  = 384
-  n_val_max = 1024
-  size_val  = 2040
+  n_val_max = 128
+  size_val  = 256
   k_key_max = Int(log2(n_key_max))
   k_val_max = Int(log2(n_val_max))
   open(file, "w") do f

@@ -8,13 +8,13 @@ typedef bit<8> regAddr_t;
 typedef bit<INTERNAL_KEY_SIZE> key_t;
 typedef bit<INTERNAL_VALUE_SIZE> value_t;
 
-// typedef bit<1> regAddr2040;
-// typedef bit<1> regAddr1024;
-// typedef bit<1> regAddr512;
-// typedef bit<1> regAddr256;
+typedef bit<INDEX_WIDTH_SLAB_2040> regAddr2040;
+typedef bit<INDEX_WIDTH_SLAB_1024> regAddr1024;
+typedef bit<INDEX_WIDTH_SLAB_512> regAddr512;
+typedef bit<INDEX_WIDTH_SLAB_256> regAddr256;
 typedef bit<INDEX_WIDTH_SLAB_128> regAddr128;
 // Note: Size of one BRAM tile = 32768 bits (32kb)
-// 2^7 * 128 = 32768 / 2 so slab128 takes half a tile
+// 2^8 * 128 = 32768 / 2 so slab128 takes a full tile
 
 
 // standard Ethernet header
