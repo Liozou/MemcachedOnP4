@@ -45,11 +45,11 @@
 #define DROP {sume_metadata.dst_port = 0; return;}
 
 
-#define INDEX_WIDTH_SLAB_128 8
-#define INDEX_WIDTH_SLAB_256 7
-#define INDEX_WIDTH_SLAB_512 6
-#define INDEX_WIDTH_SLAB_1024 5
-#define INDEX_WIDTH_SLAB_2040 4
+#define INDEX_WIDTH_SLAB_128 7
+#define INDEX_WIDTH_SLAB_256 6
+#define INDEX_WIDTH_SLAB_512 5
+#define INDEX_WIDTH_SLAB_1024 4
+#define INDEX_WIDTH_SLAB_2040 3
 
 #define OP_IS_GET (hdr.memcached.opcode==0x00)
 #define OP_IS_SET (hdr.memcached.opcode==0x01)
