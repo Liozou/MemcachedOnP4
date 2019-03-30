@@ -23,3 +23,6 @@ testdata/SimpleSumeSwitch_extern_defines.json
 
 simple_sume_switch/hw/vivado.jou
 simple_sume_switch/hw/vivado.log
+
+testdata/config_writes.*
+vivado.*
