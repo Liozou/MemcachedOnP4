@@ -91,7 +91,7 @@ control MemcachedControl(inout headers hdr,
                 else if (user_metadata.value_size <= 32) { slabID = 1; }
                 else if (user_metadata.value_size <= 64) { slabID = 2; }
                 else if (user_metadata.value_size <= 128) { slabID = 3; }
-                else { hdr.memcached.data_type = 4; }
+                else { slabID = 4; }
 
                 available_reg_rw(slabID, user_metadata.reg_address, REG_READ, user_metadata.reg_address);
                 digest_data.store_new_key = true;
