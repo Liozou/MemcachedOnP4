@@ -11,9 +11,9 @@ extern void slab128_reg_rw(in regAddr128 index,
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(6)
 extern void slab256_reg_rw(in regAddr256 index,
-                           in bit<256> newVal,
+                           in bit<248> newVal,
                            in bit<8> opCode,
-                           out bit<256> result);
+                           out bit<248> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -121,7 +121,7 @@ control MemcachedControl(inout headers hdr,
             if (user_metadata.value_size_out <= 16) {
                 slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
             } else if (user_metadata.value_size_out <= 32) {
-                slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, user_metadata.value[255:0]);
+                slab256_reg_rw((regAddr256)user_metadata.reg_address, user_metadata.value, reg_opcode, user_metadata.value);
             }
 
             /*
