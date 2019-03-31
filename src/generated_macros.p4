@@ -12,7 +12,7 @@
 #define PARSE_VALUE_TOP parse_value_256
 
 #define INTERNAL_KEY_SIZE 56
-#define INTERNAL_VALUE_SIZE 504
+#define INTERNAL_VALUE_SIZE 256
 
 #define _PARSE_KEY state parse_extract_key_8 {\
   buffer.extract(hdr.key_8);\
@@ -54,7 +54,7 @@ state parse_key_32 {\
 
 #define _PARSE_VALUE state parse_extract_value_8 {\
   buffer.extract(hdr.value_8);\
-  user_metadata.value = (bit<504>)(((bit<496>)user_metadata.value) ++ hdr.value_8.value);\
+  user_metadata.value = (bit<256>)(((bit<240>)user_metadata.value) ++ hdr.value_8.value);\
   transition parse_value_null;\
 }\
 \
@@ -66,7 +66,7 @@ state parse_value_8 {\
 }\
 state parse_extract_value_16 {\
   buffer.extract(hdr.value_16);\
-  user_metadata.value = (bit<504>)(((bit<480>)user_metadata.value) ++ hdr.value_16.value);\
+  user_metadata.value = (bit<256>)(((bit<224>)user_metadata.value) ++ hdr.value_16.value);\
   transition parse_value_8;\
 }\
 \
@@ -78,7 +78,7 @@ state parse_value_16 {\
 }\
 state parse_extract_value_32 {\
   buffer.extract(hdr.value_32);\
-  user_metadata.value = (bit<504>)(((bit<448>)user_metadata.value) ++ hdr.value_32.value);\
+  user_metadata.value = (bit<256>)(((bit<192>)user_metadata.value) ++ hdr.value_32.value);\
   transition parse_value_16;\
 }\
 \
@@ -90,7 +90,7 @@ state parse_value_32 {\
 }\
 state parse_extract_value_64 {\
   buffer.extract(hdr.value_64);\
-  user_metadata.value = (bit<504>)(((bit<384>)user_metadata.value) ++ hdr.value_64.value);\
+  user_metadata.value = (bit<256>)(((bit<128>)user_metadata.value) ++ hdr.value_64.value);\
   transition parse_value_32;\
 }\
 \
@@ -102,7 +102,7 @@ state parse_value_64 {\
 }\
 state parse_extract_value_128 {\
   buffer.extract(hdr.value_128);\
-  user_metadata.value = (bit<504>)(((bit<256>)user_metadata.value) ++ hdr.value_128.value);\
+  user_metadata.value = (bit<256>)(hdr.value_128.value);\
   transition parse_value_64;\
 }\
 \
@@ -114,7 +114,7 @@ state parse_value_128 {\
 }\
 state parse_extract_value_256 {\
   buffer.extract(hdr.value_256);\
-  user_metadata.value = (bit<504>)(hdr.value_256.value);\
+  user_metadata.value = (bit<256>)(hdr.value_256.value);\
   transition parse_value_128;\
 }\
 \
