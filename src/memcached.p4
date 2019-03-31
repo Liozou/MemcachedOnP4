@@ -1,21 +1,19 @@
-
-// #include "set_key.p4"
-
 #define REG_READ 8w0
 #define REG_WRITE 8w1
-// @Xilinx_MaxLatency(1)
-// @Xilinx_ControlWidth(1)
-// extern void slab2047_reg_rw(in regAddr2047 index,
-//                             in bit<2047> newVal,
-//                             in bit<8> opCode,
-//                             out bit<2047> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(7)
+@Xilinx_ControlWidth(8)
 extern void slab128_reg_rw(in regAddr128 index,
                            in bit<128> newVal,
                            in bit<8> opCode,
                            out bit<128> result);
+
+@Xilinx_MaxLatency(1)
+@Xilinx_ControlWidth(7)
+extern void slab256_reg_rw(in regAddr256 index,
+                           in bit<256> newVal,
+                           in bit<8> opCode,
+                           out bit<256> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -122,12 +120,12 @@ control MemcachedControl(inout headers hdr,
 
             if (user_metadata.value_size_out <= 16) {
                 slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
+            } else if (user_metadata.value_size_out <= 32) {
+                slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, user_metadata.value[255:0]);
             }
 
             /*
-            else if (user_metadata.value_size_out <= 32) {
-                slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, user_metadata.value[255:0]);
-            } else if (user_metadata.value_size_out <= 64) {
+            else if (user_metadata.value_size_out <= 64) {
                 slab512_reg_rw((regAddr512)user_metadata.reg_address, (bit<512>)user_metadata.value, reg_opcode, user_metadata.value[511:0]);
             } else if (user_metadata.value_size_out <= 128) {
                 slab1024_reg_rw((regAddr1024)user_metadata.reg_address, (bit<1024>)user_metadata.value, reg_opcode, user_metadata.value[1023:0]);
