@@ -2,14 +2,23 @@
 #define REG_WRITE 8w1
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(1)
+@Xilinx_ControlWidth(3)
+extern void available_reg_rw(in bit<3> index,
+                             in regAddr_t newVal,
+                             in bit<8> opCode,
+                             out regAddr_t result);
+
+
+
+@Xilinx_MaxLatency(1)
+@Xilinx_ControlWidth(7)
 extern void slab128_reg_rw(in regAddr128 index,
                            in bit<128> newVal,
                            in bit<8> opCode,
                            out bit<128> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(1)
+@Xilinx_ControlWidth(6)
 extern void slab256_reg_rw(in regAddr256 index,
                            in bit<248> newVal,
                            in bit<8> opCode,
@@ -37,16 +46,6 @@ control MemcachedControl(inout headers hdr,
         actions = { set_stored_info; }
         size = 2048;
     }
-
-    /* register_address_##n : no argument, returns an available register address
-     * for slab n.
-     * Note that the address overwrites that set by memcached_keyvalue.
-     */
-
-    action set_register_address(regAddr_t reg_addr) {
-        user_metadata.reg_address = reg_addr;
-    }
-    table register_address  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; } size = 64; }
 
 
     apply {
@@ -85,17 +84,16 @@ control MemcachedControl(inout headers hdr,
                  * Indeed, _value_size_in == _value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
+                bit<3> slabID;
                 user_metadata.value_size_out = (bit<8>)user_metadata.value_size;
 
-                if (user_metadata.value_size <= 16) { hdr.memcached.data_type = 1; }
-                /*
-                else if (user_metadata.value_size <= 32) { hdr.memcached.data_type = 2; }
-                else if (user_metadata.value_size <= 64) { hdr.memcached.data_type = 3; }
-                else if (user_metadata.value_size <= 128) { hdr.memcached.data_type = 4; }
-                else { hdr.memcached.data_type = 5; }
-                */
-                register_address.apply();
-                hdr.memcached.data_type = 0;
+                if (user_metadata.value_size <= 16) { slabID = 0; }
+                else if (user_metadata.value_size <= 32) { slabID = 1; }
+                else if (user_metadata.value_size <= 64) { slabID = 2; }
+                else if (user_metadata.value_size <= 128) { slabID = 3; }
+                else { slabID = 4; }
+
+                available_reg_rw(slabID, user_metadata.reg_address, REG_READ, user_metadata.reg_address);
                 digest_data.store_new_key = true;
                 digest_data.remove_this_key = is_stored_key;
             }
