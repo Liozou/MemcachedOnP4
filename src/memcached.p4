@@ -2,14 +2,14 @@
 #define REG_WRITE 8w1
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(7)
+@Xilinx_ControlWidth(1)
 extern void slab128_reg_rw(in regAddr128 index,
                            in bit<128> newVal,
                            in bit<8> opCode,
                            out bit<128> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(6)
+@Xilinx_ControlWidth(1)
 extern void slab256_reg_rw(in regAddr256 index,
                            in bit<248> newVal,
                            in bit<8> opCode,
