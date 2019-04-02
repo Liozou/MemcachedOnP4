@@ -10,14 +10,14 @@ extern void available_reg_rw(in bit<3> index,
 
 
 
-@Xilinx_MaxLatency(1)
+@Xilinx_MaxLatency(2)
 @Xilinx_ControlWidth(INDEX_WIDTH_SLAB_128)
 extern void slab128_reg_rw(in regAddr128 index,
                            in bit<128> newVal,
                            in bit<8> opCode,
                            out bit<128> result);
 
-@Xilinx_MaxLatency(1)
+@Xilinx_MaxLatency(4)
 @Xilinx_ControlWidth(INDEX_WIDTH_SLAB_256)
 extern void slab256_reg_rw(in regAddr256 index,
                            in bit<256> newVal,
