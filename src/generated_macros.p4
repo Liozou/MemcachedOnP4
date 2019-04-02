@@ -4,18 +4,18 @@
 #define _REPEAT_6(macro) macro(64,32) _REPEAT_5(macro)
 #define _REPEAT_7(macro) macro(128,64) _REPEAT_6(macro)
 
-#define _REPEAT_KEY(macro) _REPEAT_6(macro)
+#define _REPEAT_KEY(macro) _REPEAT_5(macro)
 #define _REPEAT_VALUE(macro) _REPEAT_7(macro)
 
-#define PARSE_KEY_TOP parse_key_64
+#define PARSE_KEY_TOP parse_key_32
 #define PARSE_VALUE_TOP parse_value_128
 
-#define INTERNAL_KEY_SIZE 120
+#define INTERNAL_KEY_SIZE 56
 #define INTERNAL_VALUE_SIZE 248
 
 #define _PARSE_KEY state parse_extract_key_8 {\
   buffer.extract(hdr.key_8);\
-  user_metadata.key = (bit<120>)(((bit<112>)user_metadata.key) ++ hdr.key_8.key);\
+  user_metadata.key = (bit<56>)(((bit<48>)user_metadata.key) ++ hdr.key_8.key);\
   transition parse_key_null;\
 }\
 \
@@ -27,7 +27,7 @@ state parse_key_8 {\
 }\
 state parse_extract_key_16 {\
   buffer.extract(hdr.key_16);\
-  user_metadata.key = (bit<120>)(((bit<96>)user_metadata.key) ++ hdr.key_16.key);\
+  user_metadata.key = (bit<56>)(((bit<32>)user_metadata.key) ++ hdr.key_16.key);\
   transition parse_key_8;\
 }\
 \
@@ -39,7 +39,7 @@ state parse_key_16 {\
 }\
 state parse_extract_key_32 {\
   buffer.extract(hdr.key_32);\
-  user_metadata.key = (bit<120>)(((bit<64>)user_metadata.key) ++ hdr.key_32.key);\
+  user_metadata.key = (bit<56>)(hdr.key_32.key);\
   transition parse_key_16;\
 }\
 \
@@ -47,18 +47,6 @@ state parse_key_32 {\
   transition select(hdr.memcached.key_length[2:2]) {\
     1 : parse_extract_key_32;\
     _ : parse_key_16;\
-  }\
-}\
-state parse_extract_key_64 {\
-  buffer.extract(hdr.key_64);\
-  user_metadata.key = (bit<120>)(hdr.key_64.key);\
-  transition parse_key_32;\
-}\
-\
-state parse_key_64 {\
-  transition select(hdr.memcached.key_length[3:3]) {\
-    1 : parse_extract_key_64;\
-    _ : parse_key_32;\
   }\
 }\
 
