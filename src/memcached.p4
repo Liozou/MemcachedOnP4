@@ -1,28 +1,21 @@
+#include "xilinx_core.p4"
+
 #define REG_READ 8w0
 #define REG_WRITE 8w1
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(3)
-extern void available_reg_rw(in bit<3> index,
-                             in regAddr_t newVal,
-                             in bit<8> opCode,
-                             out regAddr_t result);
-
-
-
-@Xilinx_MaxLatency(2)
-@Xilinx_ControlWidth(INDEX_WIDTH_SLAB_128)
-extern void slab128_reg_rw(in regAddr128 index,
+@Xilinx_ControlWidth(7)
+extern void slab128_reg_dataRW(in regAddr128 index,
                            in bit<128> newVal,
                            in bit<8> opCode,
                            out bit<128> result);
 
-@Xilinx_MaxLatency(4)
-@Xilinx_ControlWidth(INDEX_WIDTH_SLAB_256)
-extern void slab256_reg_rw(in regAddr256 index,
-                           in bit<256> newVal,
+@Xilinx_MaxLatency(1)
+@Xilinx_ControlWidth(6)
+extern void slab256_reg_dataRW(in regAddr256 index,
+                           in bit<248> newVal,
                            in bit<8> opCode,
-                           out bit<256> result);
+                           out bit<248> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -42,10 +35,20 @@ control MemcachedControl(inout headers hdr,
         user_metadata.value_size_out = value_size;
     }
     table memcached_keyvalue {
-        key = { user_metadata.key: exact; }
+        key = { digest_data.key_hash: exact; }
         actions = { set_stored_info; }
         size = 2048;
     }
+
+    /* register_address_##n : no argument, returns an available register address
+     * for slab n.
+     * Note that the address overwrites that set by memcached_keyvalue.
+     */
+
+    action set_register_address(regAddr_t reg_addr) {
+        user_metadata.reg_address = reg_addr;
+    }
+    table register_address  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; } size=64; }
 
 
     apply {
@@ -84,16 +87,17 @@ control MemcachedControl(inout headers hdr,
                  * Indeed, _value_size_in == _value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
-                bit<3> slabID;
                 user_metadata.value_size_out = (bit<8>)user_metadata.value_size;
 
-                if (user_metadata.value_size <= 16) { slabID = 0; }
-                else if (user_metadata.value_size <= 32) { slabID = 1; }
-                else if (user_metadata.value_size <= 64) { slabID = 2; }
-                else if (user_metadata.value_size <= 128) { slabID = 3; }
-                else { slabID = 4; }
-
-                available_reg_rw(slabID, user_metadata.reg_address, REG_READ, user_metadata.reg_address);
+                if (user_metadata.value_size <= 16) { hdr.memcached.data_type = 1; }
+                /*
+                else if (user_metadata.value_size <= 32) { hdr.memcached.data_type = 2; }
+                else if (user_metadata.value_size <= 64) { hdr.memcached.data_type = 3; }
+                else if (user_metadata.value_size <= 128) { hdr.memcached.data_type = 4; }
+                else { hdr.memcached.data_type = 5; }
+                */
+                register_address.apply();
+                hdr.memcached.data_type = 0;
                 digest_data.store_new_key = true;
                 digest_data.remove_this_key = is_stored_key;
             }
@@ -117,9 +121,9 @@ control MemcachedControl(inout headers hdr,
              */
 
             if (user_metadata.value_size_out <= 16) {
-                slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
+                slab128_reg_dataRW((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
             } else if (user_metadata.value_size_out <= 32) {
-                slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, user_metadata.value[255:0]);
+                slab256_reg_dataRW((regAddr256)user_metadata.reg_address, user_metadata.value, reg_opcode, user_metadata.value);
             }
 
             /*

@@ -199,8 +199,9 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
                 nf_expected[ind].append(pkt)
 
     if isMemcached:
-        hashed_key = compute_simple_hash(key)
-        hashed_value = compute_simple_hash(value)
+        # hashed_key = compute_simple_hash(key)
+        # hashed_value = compute_simple_hash(value)
+        hashed_key = 0; hashed_value = 0
         print "Memcached Packet with key = ", int_from_string(key), " (hashed_key = ", hashed_key, ") and value = ", int_from_string(value), " (hashed_value = ", hashed_value, ")"
         sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('cafe', 16)
     else:

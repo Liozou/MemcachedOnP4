@@ -3,21 +3,19 @@
 #define _REPEAT_5(macro) macro(32,16) _REPEAT_4(macro)
 #define _REPEAT_6(macro) macro(64,32) _REPEAT_5(macro)
 #define _REPEAT_7(macro) macro(128,64) _REPEAT_6(macro)
-#define _REPEAT_8(macro) macro(256,128) _REPEAT_7(macro)
 
-#define _REPEAT_KEY(macro) _REPEAT_8(macro)
+#define _REPEAT_KEY(macro) _REPEAT_6(macro)
 #define _REPEAT_VALUE(macro) _REPEAT_7(macro)
 
-#define PARSE_KEY_TOP parse_key_256
+#define PARSE_KEY_TOP parse_key_64
 #define PARSE_VALUE_TOP parse_value_128
 
-#define INTERNAL_KEY_SIZE 384
-#define INTERNAL_VALUE_SIZE 256
+#define INTERNAL_KEY_SIZE 120
+#define INTERNAL_VALUE_SIZE 248
 
 #define _PARSE_KEY state parse_extract_key_8 {\
   buffer.extract(hdr.key_8);\
-  user_metadata.key = (bit<384>)(((bit<368>)user_metadata.key) ++ hdr.key_8.key);\
-  digest_data.key_hash = digest_data.key_hash ^ ((bit<64>)(hdr.key_8.key));\
+  user_metadata.key = (bit<120>)(((bit<112>)user_metadata.key) ++ hdr.key_8.key);\
   transition parse_key_null;\
 }\
 \
@@ -29,8 +27,7 @@ state parse_key_8 {\
 }\
 state parse_extract_key_16 {\
   buffer.extract(hdr.key_16);\
-  user_metadata.key = (bit<384>)(((bit<352>)user_metadata.key) ++ hdr.key_16.key);\
-  digest_data.key_hash = digest_data.key_hash ^ ((bit<64>)(hdr.key_16.key));\
+  user_metadata.key = (bit<120>)(((bit<96>)user_metadata.key) ++ hdr.key_16.key);\
   transition parse_key_8;\
 }\
 \
@@ -42,8 +39,7 @@ state parse_key_16 {\
 }\
 state parse_extract_key_32 {\
   buffer.extract(hdr.key_32);\
-  user_metadata.key = (bit<384>)(((bit<320>)user_metadata.key) ++ hdr.key_32.key);\
-  digest_data.key_hash = digest_data.key_hash ^ ((bit<64>)(hdr.key_32.key));\
+  user_metadata.key = (bit<120>)(((bit<64>)user_metadata.key) ++ hdr.key_32.key);\
   transition parse_key_16;\
 }\
 \
@@ -55,8 +51,7 @@ state parse_key_32 {\
 }\
 state parse_extract_key_64 {\
   buffer.extract(hdr.key_64);\
-  user_metadata.key = (bit<384>)(((bit<256>)user_metadata.key) ++ hdr.key_64.key);\
-  digest_data.key_hash = digest_data.key_hash ^ ((bit<64>)(hdr.key_64.key));\
+  user_metadata.key = (bit<120>)(hdr.key_64.key);\
   transition parse_key_32;\
 }\
 \
@@ -66,38 +61,11 @@ state parse_key_64 {\
     _ : parse_key_32;\
   }\
 }\
-state parse_extract_key_128 {\
-  buffer.extract(hdr.key_128);\
-  user_metadata.key = (bit<384>)(((bit<256>)user_metadata.key) ++ hdr.key_128.key);\
-  digest_data.key_hash = digest_data.key_hash ^ ((bit<64>)(hdr.key_128.key));\
-  transition parse_key_64;\
-}\
-\
-state parse_key_128 {\
-  transition select(hdr.memcached.key_length[4:4]) {\
-    1 : parse_extract_key_128;\
-    _ : parse_key_64;\
-  }\
-}\
-state parse_extract_key_256 {\
-  buffer.extract(hdr.key_256);\
-  user_metadata.key = (bit<384>)(hdr.key_256.key);\
-  digest_data.key_hash = digest_data.key_hash ^ ((bit<64>)(hdr.key_256.key));\
-  transition parse_key_128;\
-}\
-\
-state parse_key_256 {\
-  transition select(hdr.memcached.key_length[5:5]) {\
-    1 : parse_extract_key_256;\
-    _ : parse_key_128;\
-  }\
-}\
 
 
 #define _PARSE_VALUE state parse_extract_value_8 {\
   buffer.extract(hdr.value_8);\
-  user_metadata.value = (bit<256>)(((bit<240>)user_metadata.value) ++ hdr.value_8.value);\
-  digest_data.value_hash = digest_data.value_hash ^ ((bit<64>)(hdr.value_8.value));\
+  user_metadata.value = (bit<248>)(((bit<240>)user_metadata.value) ++ hdr.value_8.value);\
   transition parse_value_null;\
 }\
 \
@@ -109,8 +77,7 @@ state parse_value_8 {\
 }\
 state parse_extract_value_16 {\
   buffer.extract(hdr.value_16);\
-  user_metadata.value = (bit<256>)(((bit<224>)user_metadata.value) ++ hdr.value_16.value);\
-  digest_data.value_hash = digest_data.value_hash ^ ((bit<64>)(hdr.value_16.value));\
+  user_metadata.value = (bit<248>)(((bit<224>)user_metadata.value) ++ hdr.value_16.value);\
   transition parse_value_8;\
 }\
 \
@@ -122,8 +89,7 @@ state parse_value_16 {\
 }\
 state parse_extract_value_32 {\
   buffer.extract(hdr.value_32);\
-  user_metadata.value = (bit<256>)(((bit<192>)user_metadata.value) ++ hdr.value_32.value);\
-  digest_data.value_hash = digest_data.value_hash ^ ((bit<64>)(hdr.value_32.value));\
+  user_metadata.value = (bit<248>)(((bit<192>)user_metadata.value) ++ hdr.value_32.value);\
   transition parse_value_16;\
 }\
 \
@@ -135,8 +101,7 @@ state parse_value_32 {\
 }\
 state parse_extract_value_64 {\
   buffer.extract(hdr.value_64);\
-  user_metadata.value = (bit<256>)(((bit<128>)user_metadata.value) ++ hdr.value_64.value);\
-  digest_data.value_hash = digest_data.value_hash ^ ((bit<64>)(hdr.value_64.value));\
+  user_metadata.value = (bit<248>)(((bit<128>)user_metadata.value) ++ hdr.value_64.value);\
   transition parse_value_32;\
 }\
 \
@@ -148,8 +113,7 @@ state parse_value_64 {\
 }\
 state parse_extract_value_128 {\
   buffer.extract(hdr.value_128);\
-  user_metadata.value = (bit<256>)(hdr.value_128.value);\
-  digest_data.value_hash = digest_data.value_hash ^ ((bit<64>)(hdr.value_128.value));\
+  user_metadata.value = (bit<248>)(hdr.value_128.value);\
   transition parse_value_64;\
 }\
 \
