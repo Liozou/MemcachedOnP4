@@ -44,7 +44,7 @@ parser TopParser(packet_in buffer,
 
     state start {
         buffer.extract(hdr.ethernet);
-        user_metadata.isRequest = false;
+        user_metadata.isRequest = 0;
         user_metadata.reg_address = 0;
         user_metadata.value_size = 0;
         user_metadata.value_size_out = 0;
@@ -94,7 +94,7 @@ parser TopParser(packet_in buffer,
         buffer.extract(hdr.memcached);
         digest_data.fuzz = 0xcafe;
         user_metadata.value_size = (bit<32>)(hdr.memcached.total_body - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length));
-        user_metadata.isRequest = (hdr.memcached.magic == 0x80);
+        user_metadata.isRequest = (bit<1>)(hdr.memcached.magic == 0x80);
         transition select(hdr.memcached.extras_length) {
             0: PARSE_KEY_TOP;
             4: parse_extras_32;
