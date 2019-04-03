@@ -101,7 +101,7 @@ struct user_metadata_t {
     regAddr_t reg_address;
     bit<8> value_size_out; // in bytes
     bit<32> flags;
-    bit<1> isRequest;
+    bool isRequest;
     key_t key;
     value_t value;
 }

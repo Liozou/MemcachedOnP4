@@ -5,31 +5,17 @@
 
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(7)
-extern void slab128_reg_dataRW(in regAddr128 index,
+extern void slab128_reg_rw(in regAddr128 index,
                            in bit<128> newVal,
                            in bit<8> opCode,
                            out bit<128> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(7)
-extern void slab128_active_reg_rw(in regAddr128 index,
-                           in bit<1> newVal,
-                           in bit<8> opCode,
-                           out bit<1> result);
-
-@Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(6)
-extern void slab256_reg_dataRW(in regAddr256 index,
+extern void slab256_reg_rw(in regAddr256 index,
                            in bit<248> newVal,
                            in bit<8> opCode,
                            out bit<248> result);
-
-@Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(6)
-extern void slab256_active_reg_rw(in regAddr256 index,
-                           in bit<1> newVal,
-                           in bit<8> opCode,
-                           out bit<1> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -70,7 +56,7 @@ control MemcachedControl(inout headers hdr,
             DROP
         }
 
-        if (user_metadata.isRequest==0 && hdr.memcached.magic != 0x81) {
+        if (!user_metadata.isRequest && hdr.memcached.magic != 0x81) {
             DROP
         }
 
@@ -80,8 +66,8 @@ control MemcachedControl(inout headers hdr,
 
         bit<8> reg_opcode = REG_READ;
 
-        if ((user_metadata.isRequest==1 && OP_IS_SET) ||
-            (user_metadata.isRequest==0 && OP_IS_GETK)) {
+        if ((user_metadata.isRequest && OP_IS_SET) ||
+           (!user_metadata.isRequest && OP_IS_GETK)) {
 
             do_reg_operation = true;
             bit<8> x_value_size_in = (bit<8>) user_metadata.value_size;
@@ -116,7 +102,7 @@ control MemcachedControl(inout headers hdr,
                 digest_data.remove_this_key = is_stored_key;
             }
 
-            if (user_metadata.isRequest==0 && OP_IS_GETK) {
+            if (!user_metadata.isRequest && OP_IS_GETK) {
                 hdr.memcached.opcode = 0x00; // Seems authorized by BinaryProtocolRevamped even for GETK
                 // Past this point, OP_IS_GETK merges with OP_IS_GET if the packet is a response
             }
@@ -135,9 +121,9 @@ control MemcachedControl(inout headers hdr,
              */
 
             if (user_metadata.value_size_out <= 16) {
-                slab128_reg_dataRW((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
+                slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
             } else if (user_metadata.value_size_out <= 32) {
-                slab256_reg_dataRW((regAddr256)user_metadata.reg_address, user_metadata.value, reg_opcode, user_metadata.value);
+                slab256_reg_rw((regAddr256)user_metadata.reg_address, user_metadata.value, reg_opcode, user_metadata.value);
             }
 
             /*
@@ -151,17 +137,12 @@ control MemcachedControl(inout headers hdr,
             */
         }
 
-        if (user_metadata.isRequest==1) {
+        if (user_metadata.isRequest) {
 
             if (OP_IS_GET || OP_IS_GETK) {
                 if (is_stored_key) {
                     REPOPULATE_VALUE
                     // REPOPULATE_VALUE is defined in generated_macros.p4
-                    if (user_metadata.value_size_out <= 16) {
-                        slab128_active_reg_rw((regAddr128)user_metadata.reg_address, (bit<1>)1, REG_WRITE, user_metadata.isRequest);
-                    } else if (user_metadata.value_size_out <= 32) {
-                        slab256_active_reg_rw((regAddr256)user_metadata.reg_address, (bit<1>)1, REG_WRITE, user_metadata.isRequest);
-                    }
                     hdr.extras_flags.setValid();
                     hdr.extras_flags.flags = user_metadata.flags;
                     if (OP_IS_GETK) {
