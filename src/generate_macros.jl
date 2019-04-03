@@ -68,8 +68,8 @@ function main(file)
   # size_val  = 2040
   n_key_max = 32
   size_key  = 56
-  n_val_max = 256
-  size_val  = 504
+  n_val_max = 128
+  size_val  = 248
   k_key_max = Int(log2(n_key_max))
   k_val_max = Int(log2(n_val_max))
   open(file, "w") do f
