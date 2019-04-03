@@ -50,7 +50,6 @@ parser TopParser(packet_in buffer,
         user_metadata.value_size_out = 0;
         user_metadata.key = 0;
         user_metadata.value = 0;
-        user_metadata.flags = 0;
         digest_data.src_port = 0;
         digest_data.eth_src_addr = 0;
         digest_data.unused1 = 0;
