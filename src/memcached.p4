@@ -5,28 +5,21 @@
 
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(8)
-extern void slab64_reg_rw(in regAddr64 index,
+extern void slab64_reg_rw_cbit(in regAddr64 index,
                            in bit<96> newVal,
                            in bit<8> opCode,
                            out bit<96> result);
 
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(7)
-extern void slab128_reg_rw(in regAddr128 index,
+extern void slab128_reg_rw_cbit(in regAddr128 index,
                            in bit<160> newVal,
                            in bit<8> opCode,
                            out bit<160> result);
 
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(6)
-extern void slab256_reg_rw(in regAddr256 index,
-                           in bit<280> newVal,
-                           in bit<8> opCode,
-                           out bit<280> result);
-
-@Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(6)
-extern void slab256_2_reg_rw(in regAddr256 index,
+extern void slab256_reg_rw_cbit(in regAddr256 index,
                            in bit<280> newVal,
                            in bit<8> opCode,
                            out bit<280> result);
@@ -134,14 +127,11 @@ control MemcachedControl(inout headers hdr,
              */
 
             if (user_metadata.value_size_out <= 8) {
-                slab64_reg_rw((regAddr64)user_metadata.reg_address, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
+                slab64_reg_rw_cbit((regAddr64)user_metadata.reg_address, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
             } else if (user_metadata.value_size_out <= 16) {
-                slab128_reg_rw((regAddr128)user_metadata.reg_address, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
-            } else if (user_metadata.value_size_out <= 64) {
-                slab256_reg_rw((regAddr256)user_metadata.reg_address, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
-                if (user_metadata.value_size_out > 32) {
-                    slab256_2_reg_rw((regAddr256)user_metadata.reg_address, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
-                }
+                slab128_reg_rw_cbit((regAddr128)user_metadata.reg_address, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
+            } else if (user_metadata.value_size_out <= 32) {
+                slab256_reg_rw_cbit((regAddr256)user_metadata.reg_address, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
             } else {
                 DROP
             }

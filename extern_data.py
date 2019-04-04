@@ -29,6 +29,17 @@
 
 
 extern_data = {
+"reg_rw_cbit" : {"hdl_template_file": "externs/reg_rw_cbit/hdl/EXTERN_reg_rw_cbit_template.v",
+                "cpp_template_file": "externs/reg_rw_cbit/cpp/EXTERN_reg_rw_cbit_template.hpp",
+                "replacements": {"@EXTERN_NAME@" : "extern_name",
+                                 "@MODULE_NAME@" : "module_name",
+                                 "@PREFIX_NAME@" : "prefix_name",
+                                 "@ADDR_WIDTH@" : "addr_width",
+#                                 "@NUM_CYCLES@" : "max_cycles",
+                                 "@INDEX_WIDTH@" : "input_width(index)",
+                                 "@REG_WIDTH@" : "input_width(newVal)"}
+},
+
 "reg_dataRW" : {"hdl_template_file": "externs/reg_dataRW/hdl/EXTERN_reg_dataRW_template.v",
                 "cpp_template_file": "externs/reg_dataRW/cpp/EXTERN_reg_dataRW_template.hpp",
                 "replacements": {"@EXTERN_NAME@" : "extern_name",
