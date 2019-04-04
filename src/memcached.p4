@@ -3,12 +3,6 @@
 #define REG_READ 8w0
 #define REG_WRITE 8w1
 
-@Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(8)
-extern void slab64_reg_rw(in regAddr64 index,
-                           in bit<96> newVal,
-                           in bit<8> opCode,
-                           out bit<96> result);
 
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(7)
@@ -18,11 +12,25 @@ extern void slab128_reg_rw(in regAddr128 index,
                            out bit<160> result);
 
 @Xilinx_MaxLatency(1)
+@Xilinx_ControlWidth(7)
+extern void slab128_lru_reg_rw(in regAddr128 index,
+                           in bit<1> newVal,
+                           in bit<8> opCode,
+                           out bit<1> result);
+
+@Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(6)
 extern void slab256_reg_rw(in regAddr256 index,
                            in bit<280> newVal,
                            in bit<8> opCode,
                            out bit<280> result);
+
+@Xilinx_MaxLatency(1)
+@Xilinx_ControlWidth(6)
+extern void slab256_lru_reg_rw(in regAddr256 index,
+                           in bit<1> newVal,
+                           in bit<8> opCode,
+                           out bit<1> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -126,9 +134,7 @@ control MemcachedControl(inout headers hdr,
              * between 1 and 255, hence it is stored on 8 bits.
              */
 
-            if (user_metadata.value_size_out <= 8) {
-                slab64_reg_rw((regAddr64)user_metadata.reg_address, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
-            } else if (user_metadata.value_size_out <= 16) {
+            if (user_metadata.value_size_out <= 16) {
                 slab128_reg_rw((regAddr128)user_metadata.reg_address, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
             } else if (user_metadata.value_size_out <= 32) {
                 slab256_reg_rw((regAddr256)user_metadata.reg_address, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
@@ -153,6 +159,12 @@ control MemcachedControl(inout headers hdr,
                     hdr.extras_flags.flags = (bit<32>)user_metadata.value;
                     user_metadata.value = (user_metadata.value >> 5);
                     REPOPULATE_VALUE
+                    bit<1> throwaway = 1;
+                    if (user_metadata.value_size_out <= 16) {
+                        slab128_lru_reg_rw((regAddr128)user_metadata.reg_address, throwaway, REG_WRITE, throwaway);
+                    } else if (user_metadata.value_size_out <= 32) {
+                        slab256_lru_reg_rw((regAddr256)user_metadata.reg_address, throwaway, REG_WRITE, throwaway);
+                    }
                     // REPOPULATE_VALUE is defined in generated_macros.p4
                     if (OP_IS_GETK) {
                         hdr.memcached.total_body = (bit<32>)((bit<16>)user_metadata.value_size_out + hdr.memcached.key_length + 4);

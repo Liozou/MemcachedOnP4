@@ -8,7 +8,6 @@ typedef bit<8> regAddr_t;
 typedef bit<INTERNAL_KEY_SIZE> key_t;
 typedef bit<INTERNAL_VALUE_SIZE> value_t;
 
-typedef bit<8> regAddr64;
 typedef bit<7> regAddr128;
 typedef bit<6> regAddr256;
 // typedef bit<1> regAddr512;
