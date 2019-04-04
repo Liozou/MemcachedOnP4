@@ -8,11 +8,10 @@ typedef bit<8> regAddr_t;
 typedef bit<INTERNAL_KEY_SIZE> key_t;
 typedef bit<INTERNAL_VALUE_SIZE> value_t;
 
-// typedef bit<1> regAddr2040;
-// typedef bit<1> regAddr1024;
-// typedef bit<1> regAddr512;
-typedef bit<6> regAddr256;
+typedef bit<8> regAddr64;
 typedef bit<7> regAddr128;
+typedef bit<6> regAddr256;
+// typedef bit<1> regAddr512;
 // Note: Size of one BRAM tile = 32768 bits (32kb)
 // 2^7 * 128 = 32768 / 2 so slab128 takes half a tile
 

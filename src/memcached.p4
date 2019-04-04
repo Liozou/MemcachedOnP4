@@ -4,6 +4,13 @@
 #define REG_WRITE 8w1
 
 @Xilinx_MaxLatency(1)
+@Xilinx_ControlWidth(8)
+extern void slab64_reg_rw(in regAddr64 index,
+                           in bit<96> newVal,
+                           in bit<8> opCode,
+                           out bit<96> result);
+
+@Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(7)
 extern void slab128_reg_rw(in regAddr128 index,
                            in bit<160> newVal,
@@ -119,7 +126,9 @@ control MemcachedControl(inout headers hdr,
              * between 1 and 255, hence it is stored on 8 bits.
              */
 
-            if (user_metadata.value_size_out <= 16) {
+            if (user_metadata.value_size_out <= 8) {
+                slab64_reg_rw((regAddr64)user_metadata.reg_address, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
+            } else if (user_metadata.value_size_out <= 16) {
                 slab128_reg_rw((regAddr128)user_metadata.reg_address, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
             } else if (user_metadata.value_size_out <= 32) {
                 slab256_reg_rw((regAddr256)user_metadata.reg_address, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
