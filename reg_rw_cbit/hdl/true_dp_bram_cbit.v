@@ -53,59 +53,40 @@ module true_dp_bram_cbit
 
   localparam DEPTH = 2**L2_DEPTH;
 
-  reg [WIDTH-1:0] RAM [DEPTH-1:0];
-  reg [0:0] READ_SET_BIT_RAM [DEPTH-1:0];
+  reg [WIDTH:0] RAM [DEPTH-1:0];
   reg [0:0] RAM_data_1 = {1'b0};
   reg [WIDTH-1:0] RAM_data_2 = {WIDTH{1'b0}};
 
   // The following code either initializes the memory values to a specified file or to all zeros to match hardware
   generate
     if (INIT_FILE != "") begin: use_init_file
-
-      integer ram_index_2;
-
-      initial begin
-
+      initial
         $readmemh(INIT_FILE, RAM, 0, DEPTH-1);
-
-        for (ram_index_2 = 0; ram_index_2 < DEPTH; ram_index_2 = ram_index_2 + 1)
-          READ_SET_BIT_RAM[ram_index_2] = {1'b0};
-
-      end
 
     end else begin: init_bram_to_zero
       integer ram_index;
       initial
         for (ram_index = 0; ram_index < DEPTH; ram_index = ram_index + 1) begin
-          RAM[ram_index] = {WIDTH{1'b0}};
-          READ_SET_BIT_RAM[ram_index] = {1'b0};
+          RAM[ram_index] = {1'b0, WIDTH{1'b0}};
         end
     end
   endgenerate
 
-  reg [L2_DEPTH-1:0] addr1_reg = {L2_DEPTH{1'b0}};
 
   always @(posedge clk)
-    READ_SET_BIT_RAM[addr1_reg] <= {1'b0};
-
-  always @(posedge clk)
-    if (en1)
-      if (we1) begin
-        RAM[addr1] <= din1;
-        RAM_data_1 <= din1;
-      end else begin
-        RAM_data_1 <= READ_SET_BIT_RAM[addr1];
-        addr1_reg <= addr1;
-      end
+    if (en1) begin
+      RAM_data_1 <= RAM[addr1][WIDTH:WIDTH];
+      RAM[addr1][WIDTH:WIDTH] <= {1'b0};
+    end
 
   always @(posedge clk)
     if (en2)
       if (we2) begin
-        RAM[addr2] <= din2;
+        RAM[addr2] <= {1'b0, din2};
         RAM_data_2 <= din2;
       end else begin
-        RAM_data_2 <= RAM[addr2];
-        READ_SET_BIT_RAM[addr2] <= {1'b1};
+        RAM_data_2 <= RAM[addr2][WIDTH-1:0];
+        RAM[addr2][WIDTH:WIDTH] = {1'b1};
       end
 
   // The following is a 2 clock cycle read latency with improve clock-to-out timing
