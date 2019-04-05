@@ -75,15 +75,16 @@ control TopPipe(inout headers hdr,
         }
 
         if (hdr.memcached.isValid()) {
-           MemcachedControl.apply(hdr, user_metadata, digest_data, sume_metadata);
-           // memctrl.apply();
+            sume_metadata.dst_port = sume_metadata.dst_port | 2;
+            MemcachedControl.apply(hdr, user_metadata, digest_data, sume_metadata);
+            // memctrl.apply();
         }
     }
 }
 
 
 // Deparser Implementation
-@Xilinx_MaxPacketRegion(16384)
+// @Xilinx_MaxPacketRegion(16384)
 control TopDeparser(packet_out packet,
                     in headers hdr,
                     in user_metadata_t user_metadata,

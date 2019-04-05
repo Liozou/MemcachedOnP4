@@ -199,10 +199,14 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
                 nf_expected[ind].append(pkt)
 
     if isMemcached:
-        hashed_key = compute_simple_hash(key)
-        hashed_value = compute_simple_hash(value)
+        # hashed_key = compute_simple_hash(key)
+        # hashed_value = compute_simple_hash(value)
+        sss_sdnet_tuples.sume_tuple_expect['dst_port'] |= 2
+        hashed_key = 0; hashed_value = 0
         print "Memcached Packet with key = ", int_from_string(key), " (hashed_key = ", hashed_key, ") and value = ", int_from_string(value), " (hashed_value = ", hashed_value, ")"
         sss_sdnet_tuples.dig_tuple_expect['fuzz'] = int('cafe', 16)
+        if src_known:
+            dma0_expected.append(pkt)
     else:
         hashed_key = 0; hashed_value = 0
         print "Non-M Packet"
@@ -213,14 +217,14 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
 
     # If src MAC address is unknown, send over DMA
     if not src_known:
-        sss_sdnet_tuples.sume_tuple_expect['dst_port'] = sss_sdnet_tuples.sume_tuple_expect['dst_port']
         src_port = portMap[src_ind]
         eth_src_addr = int(pkt[Ether].src.replace(':',''),16)
         if isMemcached:
             digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('feca', 16), key_hash=hashed_key, value_hash=hashed_value) # This has to be inverted for some reason
+            dma0_expected.append(digest_pkt / pkt)
         else:
             digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=int('bbbb', 16), key_hash=hashed_key, value_hash=hashed_value)
-        dma0_expected.append(digest_pkt)
+            dma0_expected.append(digest_pkt)
         sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 1
         sss_sdnet_tuples.dig_tuple_expect['src_port'] = src_port
         sss_sdnet_tuples.dig_tuple_expect['eth_src_addr'] = eth_src_addr

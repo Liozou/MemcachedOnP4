@@ -31,7 +31,6 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
     state parse_extract_$(key_or_value)_$n {
       buffer.extract(hdr.$(key_or_value)_$n);
       user_metadata.$(key_or_value) = (bit<$max_size>)($(size)hdr.$(key_or_value)_$n.$(key_or_value));
-      digest_data.$(key_or_value)_hash = digest_data.$(key_or_value)_hash ^ ((bit<64>)(hdr.$(key_or_value)_$n.$(key_or_value)));
       transition parse_$(key_or_value)_$next;
     }
 
@@ -63,15 +62,14 @@ function generate_repopulate_value(max_n=1024)
 end
 
 function main(file)
-
   # n_key_max = 256
   # size_key  = 384
   # n_val_max = 1024
   # size_val  = 2040
-  n_key_max = 256
-  size_key  = 384
+  n_key_max = 32
+  size_key  = 56
   n_val_max = 128
-  size_val  = 256
+  size_val  = 280
   k_key_max = Int(log2(n_key_max))
   k_val_max = Int(log2(n_val_max))
   open(file, "w") do f

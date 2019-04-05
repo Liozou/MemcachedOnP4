@@ -6,8 +6,6 @@
 // #define _REPEAT_VALUE(macro) _REPEAT_10(macro)
 // #define PARSE_KEY_TOP parse_key_256
 // #define PARSE_VALUE_TOP parse_value_1024
-// #define INTERNAL_KEY_SIZE 384
-// #define INTERNAL_VALUE_SIZE 2040
 // #define _PARSE_VALUE
 // #define _PARSE_KEY
 
@@ -43,13 +41,6 @@
 
 
 #define DROP {sume_metadata.dst_port = 0; return;}
-
-
-#define INDEX_WIDTH_SLAB_128 7
-#define INDEX_WIDTH_SLAB_256 6
-#define INDEX_WIDTH_SLAB_512 5
-#define INDEX_WIDTH_SLAB_1024 4
-#define INDEX_WIDTH_SLAB_2040 3
 
 #define OP_IS_GET (hdr.memcached.opcode==0x00)
 #define OP_IS_SET (hdr.memcached.opcode==0x01)

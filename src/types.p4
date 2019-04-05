@@ -8,13 +8,12 @@ typedef bit<8> regAddr_t;
 typedef bit<INTERNAL_KEY_SIZE> key_t;
 typedef bit<INTERNAL_VALUE_SIZE> value_t;
 
-typedef bit<INDEX_WIDTH_SLAB_2040> regAddr2040;
-typedef bit<INDEX_WIDTH_SLAB_1024> regAddr1024;
-typedef bit<INDEX_WIDTH_SLAB_512> regAddr512;
-typedef bit<INDEX_WIDTH_SLAB_256> regAddr256;
-typedef bit<INDEX_WIDTH_SLAB_128> regAddr128;
+typedef bit<8> regAddr64;
+typedef bit<7> regAddr128;
+typedef bit<6> regAddr256;
+// typedef bit<1> regAddr512;
 // Note: Size of one BRAM tile = 32768 bits (32kb)
-// 2^8 * 128 = 32768 / 2 so slab128 takes a full tile
+// 2^7 * 128 = 32768 / 2 so slab128 takes half a tile
 
 
 // standard Ethernet header
@@ -100,7 +99,6 @@ struct user_metadata_t {
     bit<32> value_size;    // in bytes
     regAddr_t reg_address;
     bit<8> value_size_out; // in bytes
-    bit<32> flags;
     bool isRequest;
     key_t key;
     value_t value;

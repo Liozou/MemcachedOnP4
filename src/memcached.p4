@@ -1,28 +1,28 @@
+#include "xilinx_core.p4"
+
 #define REG_READ 8w0
 #define REG_WRITE 8w1
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(3)
-extern void available_reg_rw(in bit<3> index,
-                             in regAddr_t newVal,
-                             in bit<8> opCode,
-                             out regAddr_t result);
-
-
+@Xilinx_ControlWidth(8)
+extern void slab64_reg_rw(in regAddr64 index,
+                           in bit<96> newVal,
+                           in bit<8> opCode,
+                           out bit<96> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(INDEX_WIDTH_SLAB_128)
+@Xilinx_ControlWidth(7)
 extern void slab128_reg_rw(in regAddr128 index,
-                           in bit<128> newVal,
+                           in bit<160> newVal,
                            in bit<8> opCode,
-                           out bit<128> result);
+                           out bit<160> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(INDEX_WIDTH_SLAB_256)
+@Xilinx_ControlWidth(6)
 extern void slab256_reg_rw(in regAddr256 index,
-                           in bit<256> newVal,
+                           in bit<280> newVal,
                            in bit<8> opCode,
-                           out bit<256> result);
+                           out bit<280> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -36,9 +36,8 @@ control MemcachedControl(inout headers hdr,
      * The values are not directly stored in the tables because of their size.
      */
 
-    action set_stored_info(regAddr_t reg_addr, bit<32> flags, bit<8> value_size) {
+    action set_stored_info(regAddr_t reg_addr, bit<8> value_size) {
         user_metadata.reg_address = reg_addr;
-        user_metadata.flags = flags;
         user_metadata.value_size_out = value_size;
     }
     table memcached_keyvalue {
@@ -46,6 +45,16 @@ control MemcachedControl(inout headers hdr,
         actions = { set_stored_info; }
         size = 2048;
     }
+
+    /* register_address_##n : no argument, returns an available register address
+     * for slab n.
+     * Note that the address overwrites that set by memcached_keyvalue.
+     */
+
+    action set_register_address(regAddr_t reg_addr) {
+        user_metadata.reg_address = reg_addr;
+    }
+    table register_address  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; } size=64; }
 
 
     apply {
@@ -84,16 +93,17 @@ control MemcachedControl(inout headers hdr,
                  * Indeed, _value_size_in == _value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
-                bit<3> slabID;
                 user_metadata.value_size_out = (bit<8>)user_metadata.value_size;
 
-                if (user_metadata.value_size <= 16) { slabID = 0; }
-                else if (user_metadata.value_size <= 32) { slabID = 1; }
-                else if (user_metadata.value_size <= 64) { slabID = 2; }
-                else if (user_metadata.value_size <= 128) { slabID = 3; }
-                else { slabID = 4; }
-
-                available_reg_rw(slabID, user_metadata.reg_address, REG_READ, user_metadata.reg_address);
+                if (user_metadata.value_size <= 16) { hdr.memcached.data_type = 1; }
+                /*
+                else if (user_metadata.value_size <= 32) { hdr.memcached.data_type = 2; }
+                else if (user_metadata.value_size <= 64) { hdr.memcached.data_type = 3; }
+                else if (user_metadata.value_size <= 128) { hdr.memcached.data_type = 4; }
+                else { hdr.memcached.data_type = 5; }
+                */
+                register_address.apply();
+                hdr.memcached.data_type = 0;
                 digest_data.store_new_key = true;
                 digest_data.remove_this_key = is_stored_key;
             }
@@ -116,31 +126,27 @@ control MemcachedControl(inout headers hdr,
              * between 1 and 255, hence it is stored on 8 bits.
              */
 
-            if (user_metadata.value_size_out <= 16) {
-                slab128_reg_rw((regAddr128)user_metadata.reg_address, (bit<128>)user_metadata.value, reg_opcode, user_metadata.value[127:0]);
+            if (user_metadata.value_size_out <= 8) {
+                slab64_reg_rw((regAddr64)user_metadata.reg_address, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
+            } else if (user_metadata.value_size_out <= 16) {
+                slab128_reg_rw((regAddr128)user_metadata.reg_address, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
             } else if (user_metadata.value_size_out <= 32) {
-                slab256_reg_rw((regAddr256)user_metadata.reg_address, (bit<256>)user_metadata.value, reg_opcode, user_metadata.value[255:0]);
+                slab256_reg_rw((regAddr256)user_metadata.reg_address, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
+            } else {
+                DROP
             }
 
-            /*
-            else if (user_metadata.value_size_out <= 64) {
-                slab512_reg_rw((regAddr512)user_metadata.reg_address, (bit<512>)user_metadata.value, reg_opcode, user_metadata.value[511:0]);
-            } else if (user_metadata.value_size_out <= 128) {
-                slab1024_reg_rw((regAddr1024)user_metadata.reg_address, (bit<1024>)user_metadata.value, reg_opcode, user_metadata.value[1023:0]);
-            } else { // 128 < value_size_out <= 255
-                slab2040_reg_rw((regAddr2040)user_metadata.reg_address, user_metadata.value, reg_opcode, user_metadata.value);
-            }
-            */
         }
 
         if (user_metadata.isRequest) {
 
             if (OP_IS_GET || OP_IS_GETK) {
                 if (is_stored_key) {
+                    hdr.extras_flags.setValid();
+                    hdr.extras_flags.flags = (bit<32>)user_metadata.value;
+                    user_metadata.value = (user_metadata.value >> 5);
                     REPOPULATE_VALUE
                     // REPOPULATE_VALUE is defined in generated_macros.p4
-                    hdr.extras_flags.setValid();
-                    hdr.extras_flags.flags = user_metadata.flags;
                     if (OP_IS_GETK) {
                         hdr.memcached.total_body = (bit<32>)((bit<16>)user_metadata.value_size_out + hdr.memcached.key_length + 4);
                     } else {
