@@ -53,15 +53,15 @@ parser TopParser(packet_in buffer,
         digest_data.fuzz = 0xbbbb;
         digest_data.magic = 0;
         digest_data.opcode = 0;
-        digest_data.unused1 = 0;
+        digest_data.unused = 0;
         digest_data.key = 0;
         digest_data.expiration = 0;
-        digest_data.unused2 = 0;
+        digest_data.flags_value = 0;
         digest_data.value_size_out = 0;
         digest_data.reg_addr = 0;
-        digest_data.unused = 0;
-        digest_data.store_new_key = 0;
-        digest_data.remove_this_key = 0;
+        digest_data.reserved_flags = 0;
+        digest_data.store_new_key = false;
+        digest_data.remove_this_key = false;
         digest_data.eth_src_addr = 0;
         digest_data.src_port = 0;
 
@@ -109,11 +109,13 @@ parser TopParser(packet_in buffer,
 
     state parse_extras_32 {
         buffer.extract(hdr.extras_flags);
+        digest_data.flags_value = hdr.extras_flags.flags;
         transition PARSE_KEY_TOP;
     }
     state parse_extras_64 {
         buffer.extract(hdr.extras_flags);
         buffer.extract(hdr.extras_expiration);
+        digest_data.flags_value = hdr.extras_flags.flags;
         digest_data.expiration = hdr.extras_expiration.expiration;
         transition PARSE_KEY_TOP;
     }

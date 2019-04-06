@@ -86,15 +86,15 @@ struct digest_data_t {
     bit<16> fuzz;
     bit<8> magic;
     bit<8> opcode;
-    bit<8> unused1;
+    bit<8> unused;
     bit<56> key;
-    bit<32> unused2;
+    bit<32> flags_value;
     bit<32> expiration;
     bit<8> value_size_out;
     bit<8> reg_addr;
-    bit<6> unused;
-    bit<1> store_new_key;
-    bit<1> remove_this_key;
+    bit<6> reserved_flags;
+    bool store_new_key;
+    bool remove_this_key;
     bit<64> eth_src_addr;
     port_t src_port;
 }
