@@ -51,6 +51,8 @@ parser TopParser(packet_in buffer,
         digest_data.magic = 0;
         digest_data.opcode = 0;
         digest_data.key = 0;
+        digest_data.flags = 0;
+        digest_data.expiration = 0;
         digest_data.value_size_out = 0;
         digest_data.reg_addr = 0;
         digest_data.unused = 0;
@@ -104,11 +106,14 @@ parser TopParser(packet_in buffer,
 
     state parse_extras_32 {
         buffer.extract(hdr.extras_flags);
+        digest_data.flags = hdr.extras_flags.flags;
         transition PARSE_KEY_TOP;
     }
     state parse_extras_64 {
         buffer.extract(hdr.extras_flags);
         buffer.extract(hdr.extras_expiration);
+        digest_data.flags = hdr.extras_flags.flags;
+        digest_data.expiration = hdr.extras_expiration.expiration;
         transition PARSE_KEY_TOP;
     }
 

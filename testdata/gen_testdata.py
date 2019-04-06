@@ -208,17 +208,14 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
 
     if isMemcached:
         print "Memcached Packet with key = ", hex(int_from_string(key))
-        if len(key) < 8:
-            int_key2 = int_from_string(key); int_key1 = 0
-        else:
-            int_key2 = int_from_string(key[:8]); int_key1 = int_from_string(key[8:])
+        int_key = int_from_string(key);
         fuzz = int('cafe', 16)
         magic = int('80', 16)
         opcode = 0
         sss_sdnet_tuples.dig_tuple_expect['key'] = int_from_string(key)
     else:
         print "Non-M Packet"
-        int_key2 = 0; int_key1 = 0; magic = 0; opcode = 0
+        int_key = 0; magic = 0; opcode = 0
         fuzz = int('bbbb', 16)
         sss_sdnet_tuples.dig_tuple_expect['key'] = 0
 
@@ -238,7 +235,7 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
     sss_sdnet_tuples.dig_tuple_expect['fuzz'] = fuzz
 
     if isMemcached or not src_known:
-        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=inverse_hex_from_int(fuzz), key1=int_key1, key2=int_key2, magic=magic, opcode=opcode)
+        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=inverse_hex_from_int(fuzz), key=int_key, magic=magic, opcode=opcode)
         dma0_expected.append(digest_pkt)
         sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 1
 

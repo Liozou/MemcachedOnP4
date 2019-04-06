@@ -85,7 +85,9 @@ struct digest_data_t {
     bit<16> fuzz;
     bit<8> magic;
     bit<8> opcode;
-    bit<128> key;
+    bit<64> key;
+    bit<32> flags;
+    bit<32> expiration;
     bit<8> value_size_out;
     bit<8> reg_addr;
     bit<6> unused;

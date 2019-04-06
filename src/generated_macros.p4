@@ -10,7 +10,7 @@
 #define PARSE_KEY_TOP parse_key_32
 #define PARSE_VALUE_TOP parse_value_128
 
-#define INTERNAL_VALUE_SIZE 280
+#define INTERNAL_VALUE_SIZE 248
 
 #define _PARSE_KEY state parse_extract_key_8 {\
   buffer.extract(hdr.key_8);\

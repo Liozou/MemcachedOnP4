@@ -39,8 +39,9 @@ class Digest_data(Packet):
         ByteField("flags", 0),
         ByteField("reg_addr", 0),
         ByteField("value_size_out", 0),
-        LELongField("key2", 0),
-        LELongField("key1", 0),
+        IntField("expiration", 0),
+        IntField("flags_value", 0),
+        LELongField("key", 0),
         ByteField("opcode", 0),
         ByteField("magic", 0),
         ShortField("fuzz", 0)
