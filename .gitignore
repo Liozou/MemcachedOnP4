@@ -12,7 +12,6 @@ simple_sume_switch/test/seed
 simple_sume_switch/test/sim_learning_default/config_writes.pyc
 
 nf_sume_sdnet_ip/
-src/*.dat
 src/*.tbl
 src/*.sdnet
 testdata/*.axi

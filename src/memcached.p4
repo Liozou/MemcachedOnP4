@@ -6,23 +6,23 @@
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(8)
 extern void slab64_reg_rw(in regAddr64 index,
-                           in bit<64> newVal,
+                           in bit<96> newVal,
                            in bit<8> opCode,
-                           out bit<64> result);
+                           out bit<96> result);
 
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(7)
 extern void slab128_reg_rw(in regAddr128 index,
-                           in bit<128> newVal,
+                           in bit<160> newVal,
                            in bit<8> opCode,
-                           out bit<128> result);
+                           out bit<160> result);
 
 @Xilinx_MaxLatency(1)
 @Xilinx_ControlWidth(6)
 extern void slab256_reg_rw(in regAddr256 index,
-                           in bit<248> newVal,
+                           in bit<280> newVal,
                            in bit<8> opCode,
-                           out bit<248> result);
+                           out bit<280> result);
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
@@ -36,13 +36,12 @@ control MemcachedControl(inout headers hdr,
      * The values are not directly stored in the tables because of their size.
      */
 
-    action set_stored_info(regAddr_t reg_addr, bit<8> value_size, bit<32> flags) {
-        digest_data.reg_addr = reg_addr;
-        digest_data.value_size_out = value_size;
-        hdr.extras_flags.flags = flags;
+    action set_stored_info(regAddr_t reg_addr, bit<8> value_size) {
+        user_metadata.reg_addr = reg_addr;
+        user_metadata.value_size_out = value_size;
     }
     table memcached_keyvalue {
-        key = { digest_data.key[55:0]: exact; }
+        key = { user_metadata.key: exact; }
         actions = { set_stored_info; }
         size = 1024;
     }
@@ -53,7 +52,7 @@ control MemcachedControl(inout headers hdr,
      */
 
     action set_register_address(regAddr_t reg_addr) {
-        digest_data.reg_addr = reg_addr;
+        user_metadata.reg_addr = reg_addr;
     }
     table register_address  { key = { hdr.memcached.data_type: exact; } actions = { set_register_address; } size=64; }
 
@@ -81,7 +80,7 @@ control MemcachedControl(inout headers hdr,
             x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
             x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
             x_value_size_in = x_value_size_in | (x_value_size_in >> 4);
-            bit<8> x_value_size_out = digest_data.value_size_out;
+            bit<8> x_value_size_out = user_metadata.value_size_out;
             x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
             x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
             x_value_size_out = x_value_size_out | (x_value_size_out >> 4);
@@ -94,7 +93,7 @@ control MemcachedControl(inout headers hdr,
                  * Indeed, _value_size_in == _value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
-                digest_data.value_size_out = (bit<8>)user_metadata.value_size;
+                user_metadata.value_size_out = (bit<8>)user_metadata.value_size;
 
                 if (user_metadata.value_size <= 16) { hdr.memcached.data_type = 1; }
                 /*
@@ -127,12 +126,12 @@ control MemcachedControl(inout headers hdr,
              * between 1 and 255, hence it is stored on 8 bits.
              */
 
-            if (digest_data.value_size_out <= 8) {
-                slab64_reg_rw((regAddr64)digest_data.reg_addr, ((bit<64>)user_metadata.value), reg_opcode, user_metadata.value[63:0]);
-            } else if (digest_data.value_size_out <= 16) {
-                slab128_reg_rw((regAddr128)digest_data.reg_addr, ((bit<128>)user_metadata.value), reg_opcode, user_metadata.value[127:0]);
-            } else if (digest_data.value_size_out <= 32) {
-                slab256_reg_rw((regAddr256)digest_data.reg_addr, user_metadata.value, reg_opcode, user_metadata.value);
+            if (user_metadata.value_size_out <= 8) {
+                slab64_reg_rw((regAddr64)user_metadata.reg_addr, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
+            } else if (user_metadata.value_size_out <= 16) {
+                slab128_reg_rw((regAddr128)user_metadata.reg_addr, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
+            } else if (user_metadata.value_size_out <= 32) {
+                slab256_reg_rw((regAddr256)user_metadata.reg_addr, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
             } else {
                 DROP
             }
@@ -144,12 +143,14 @@ control MemcachedControl(inout headers hdr,
             if (OP_IS_GET || OP_IS_GETK) {
                 if (is_stored_key) {
                     hdr.extras_flags.setValid();
+                    hdr.extras_flags.flags = user_metadata.value[31:0];
+                    user_metadata.value[INTERNAL_VALUE_SIZE-33:0] = user_metadata.value[INTERNAL_VALUE_SIZE-1:32];
                     REPOPULATE_VALUE
                     if (OP_IS_GETK) {
-                        hdr.memcached.total_body = (bit<32>)((bit<16>)digest_data.value_size_out + hdr.memcached.key_length + 4);
+                        hdr.memcached.total_body = (bit<32>)((bit<16>)user_metadata.value_size_out + hdr.memcached.key_length + 4);
                     } else {
                         UNSET_KEY
-                        hdr.memcached.total_body = (bit<32>)digest_data.value_size_out + 4;
+                        hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
                     }
                     hdr.memcached.magic = 0x81; // Returning a response packet
                     hdr.memcached.vbucket_id = 0; // No error
@@ -160,6 +161,14 @@ control MemcachedControl(inout headers hdr,
             }
 
         }
+
+        sume_metadata.send_dig_to_cpu = 1;
+        digest_data.fuzz = 0xcafe;
+        digest_data.magic = hdr.memcached.magic;
+        digest_data.opcode = hdr.memcached.opcode;
+        digest_data.key = user_metadata.key;
+        digest_data.value_size_out = user_metadata.value_size_out;
+        digest_data.reg_addr = user_metadata.reg_addr;
 
     }
 

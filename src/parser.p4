@@ -45,14 +45,18 @@ parser TopParser(packet_in buffer,
     state start {
         user_metadata.value_size = 0;
         user_metadata.isRequest = false;
+        user_metadata.value_size_out = 0;
+        user_metadata.reg_addr = 0;
+        user_metadata.key = 0;
         user_metadata.value = 0;
 
         digest_data.fuzz = 0xbbbb;
         digest_data.magic = 0;
         digest_data.opcode = 0;
+        digest_data.unused1 = 0;
         digest_data.key = 0;
-        digest_data.flags = 0;
         digest_data.expiration = 0;
+        digest_data.unused2 = 0;
         digest_data.value_size_out = 0;
         digest_data.reg_addr = 0;
         digest_data.unused = 0;
@@ -93,7 +97,6 @@ parser TopParser(packet_in buffer,
 
     state parse_memcached {
         buffer.extract(hdr.memcached);
-        digest_data.fuzz = 0xcafe;
         user_metadata.value_size = (bit<32>)(hdr.memcached.total_body - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length));
         user_metadata.isRequest = (hdr.memcached.magic == 0x80);
         transition select(hdr.memcached.extras_length) {
@@ -106,13 +109,11 @@ parser TopParser(packet_in buffer,
 
     state parse_extras_32 {
         buffer.extract(hdr.extras_flags);
-        digest_data.flags = hdr.extras_flags.flags;
         transition PARSE_KEY_TOP;
     }
     state parse_extras_64 {
         buffer.extract(hdr.extras_flags);
         buffer.extract(hdr.extras_expiration);
-        digest_data.flags = hdr.extras_flags.flags;
         digest_data.expiration = hdr.extras_expiration.expiration;
         transition PARSE_KEY_TOP;
     }

@@ -6,6 +6,7 @@
 
 typedef bit<8> regAddr_t;
 typedef bit<INTERNAL_VALUE_SIZE> value_t;
+typedef bit<INTERNAL_KEY_SIZE> key_t;
 
 typedef bit<8> regAddr64;
 typedef bit<7> regAddr128;
@@ -85,8 +86,9 @@ struct digest_data_t {
     bit<16> fuzz;
     bit<8> magic;
     bit<8> opcode;
-    bit<64> key;
-    bit<32> flags;
+    bit<8> unused1;
+    bit<56> key;
+    bit<32> unused2;
     bit<32> expiration;
     bit<8> value_size_out;
     bit<8> reg_addr;
@@ -100,5 +102,8 @@ struct digest_data_t {
 struct user_metadata_t {
     bit<32> value_size;    // in bytes
     bool isRequest;
+    bit<8> value_size_out;
+    bit<8> reg_addr;
+    key_t key;
     value_t value;
 }
