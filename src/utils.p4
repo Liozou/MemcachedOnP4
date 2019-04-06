@@ -8,6 +8,7 @@
 // #define PARSE_VALUE_TOP parse_value_1024
 // #define _PARSE_VALUE
 // #define _PARSE_KEY
+// #define REPOPULATE_VALUE
 
 
 #define _MAKE_KEY_T(n, next) header key_##n##_t { bit<n> key; }

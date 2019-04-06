@@ -75,7 +75,9 @@ control TopPipe(inout headers hdr,
         }
 
         if (hdr.memcached.isValid()) {
-            sume_metadata.dst_port = sume_metadata.dst_port | 34;
+            sume_metadata.send_dig_to_cpu = 1;
+            digest_data.magic = hdr.memcached.magic;
+            digest_data.opcode = hdr.memcached.opcode;
             MemcachedControl.apply(hdr, user_metadata, digest_data, sume_metadata);
             // memctrl.apply();
         }

@@ -43,23 +43,23 @@ parser TopParser(packet_in buffer,
                  inout sume_metadata_t sume_metadata) {
 
     state start {
-        buffer.extract(hdr.ethernet);
-        user_metadata.isRequest = false;
-        user_metadata.reg_address = 0;
         user_metadata.value_size = 0;
-        user_metadata.value_size_out = 0;
-        user_metadata.key = 0;
+        user_metadata.isRequest = false;
         user_metadata.value = 0;
-        digest_data.src_port = 0;
-        digest_data.eth_src_addr = 0;
-        digest_data.unused1 = 0;
-        digest_data.key_hash = 0;
-        digest_data.unused2 = 0;
-        digest_data.value_hash = 0;
-        digest_data.store_new_key = false;
-        digest_data.remove_this_key = false;
-        digest_data.unused3 = 0;
+
         digest_data.fuzz = 0xbbbb;
+        digest_data.magic = 0;
+        digest_data.opcode = 0;
+        digest_data.key = 0;
+        digest_data.value_size_out = 0;
+        digest_data.reg_addr = 0;
+        digest_data.unused = 0;
+        digest_data.store_new_key = 0;
+        digest_data.remove_this_key = 0;
+        digest_data.eth_src_addr = 0;
+        digest_data.src_port = 0;
+
+        buffer.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             0x0800: parse_ipv4;
             default: accept;

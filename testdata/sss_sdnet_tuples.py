@@ -4,10 +4,10 @@
 # Copyright (c) 2017 Stephen Ibanez
 # All rights reserved.
 #
-# This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+# This software was developed by Stanford University and the University of Cambridge Computer Laboratory
 # under National Science Foundation under Grant No. CNS-0855268,
 # the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 # as part of the DARPA MRC research programme.
 #
 # @NETFPGA_LICENSE_HEADER_START@
@@ -32,7 +32,7 @@
 
 """
 Used to create the Tuple_in.txt and Tuple_out.txt files for the
-SDNet simulations 
+SDNet simulations
 """
 
 import argparse, collections, sys
@@ -45,34 +45,37 @@ tuple_expect_file = "Tuple_expect.txt"
 
 # Diget Data MUST be 256 bits
 """ Digest Data:
-   fuzz           (16 bits)
-   unused1        (16 bits)
-   key_hash       (64 bits)
-   unused2        (8 bits)
-   value_hash     (64 bits)
-   unused3         (16 bits)
-   eth_src_addr   (64 bits)
-   src_port       (8 bits)
+   fuzz            (16 bits)
+   magic           (8 bits)
+   opcode          (8 bits)
+   key             (128 bits)
+   value_size_out  (8 bits)
+   reg_addr        (8 bits)
+   flags           (8 bits)
+   eth_src_addr    (64 bits)
+   src_port        (8 bits)
 """
 
 dig_field_len = collections.OrderedDict()
 dig_field_len['fuzz'] = 16
-dig_field_len['unused1'] = 16
-dig_field_len['key_hash'] = 64
-dig_field_len['unused2'] = 8
-dig_field_len['value_hash'] = 64
-dig_field_len['unused3'] = 16
+dig_field_len['magic'] = 8
+dig_field_len['opcode'] = 8
+dig_field_len['key'] = 128
+dig_field_len['value_size_out'] = 8
+dig_field_len['reg_addr'] = 8
+dig_field_len['flags'] = 8
 dig_field_len['eth_src_addr'] = 64
 dig_field_len['src_port'] = 8
 
 #initialize tuple_expect
 dig_tuple_expect = collections.OrderedDict()
 dig_tuple_expect['fuzz'] = 0
-dig_tuple_expect['unused1'] = 0
-dig_tuple_expect['key_hash'] = 0
-dig_tuple_expect['unused2'] = 0
-dig_tuple_expect['value_hash'] = 0
-dig_tuple_expect['unused3'] = 0
+dig_tuple_expect['magic'] = 0
+dig_tuple_expect['opcode'] = 0
+dig_tuple_expect['key'] = 0
+dig_tuple_expect['value_size_out'] = 0
+dig_tuple_expect['reg_addr'] = 0
+dig_tuple_expect['flags'] = 0
 dig_tuple_expect['eth_src_addr'] = 0
 dig_tuple_expect['src_port'] = 0
 
@@ -83,16 +86,16 @@ Clear the tuple files
 def clear_tuple_files():
     with open(tuple_in_file, "w") as f:
         f.write("")
-    
+
     with open(tuple_expect_file, "w") as f:
         f.write("")
 
 
 """
-Return a binary string with length = field_len_dic[field_name] 
+Return a binary string with length = field_len_dic[field_name]
 """
 def get_bin_val(field_name, value, field_len_dic):
-    format_string = "{0:0%db}" % field_len_dic[field_name] 
+    format_string = "{0:0%db}" % field_len_dic[field_name]
     bin_string = format_string.format(value)
     return bin_string
 
@@ -104,7 +107,7 @@ def bin_to_hex(bin_string):
     assert(len(bin_string) % 4 == 0)
     for i in range(0,len(bin_string),4):
         hex_string += "{0:1x}".format(int(bin_string[i:i+4], 2))
-    return hex_string 
+    return hex_string
 
 """
 Write the next line of the Tuple_in.txt and Tuple_expect.txt
@@ -166,7 +169,7 @@ def parse_tup_string(tup_string, field_len_dic):
     tup_len = find_tup_len(field_len_dic)
     bin_string = hex_to_bin(tup_string, tup_len)
     check_length(bin_string, field_len_dic)
-    tup = collections.OrderedDict()   
+    tup = collections.OrderedDict()
     i = 0
     for (field,length) in field_len_dic.iteritems():
         tup[field] = int(bin_string[i:i+length], 2)
@@ -197,4 +200,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     parse_line(args.parse, args.tuple_type)
-

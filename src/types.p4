@@ -5,7 +5,6 @@
 
 
 typedef bit<8> regAddr_t;
-typedef bit<INTERNAL_KEY_SIZE> key_t;
 typedef bit<INTERNAL_VALUE_SIZE> value_t;
 
 typedef bit<8> regAddr64;
@@ -84,22 +83,20 @@ struct headers {
 // digest data to send to cpu if desired
 struct digest_data_t {
     bit<16> fuzz;
-    bit<16> unused1;
-    bit<64> key_hash;
-    bit<8> unused2;
-    bit<64> value_hash;
-    bool store_new_key;
-    bool remove_this_key;
-    bit<14> unused3;
+    bit<8> magic;
+    bit<8> opcode;
+    bit<128> key;
+    bit<8> value_size_out;
+    bit<8> reg_addr;
+    bit<6> unused;
+    bit<1> store_new_key;
+    bit<1> remove_this_key;
     bit<64> eth_src_addr;
     port_t src_port;
 }
 
 struct user_metadata_t {
     bit<32> value_size;    // in bytes
-    regAddr_t reg_address;
-    bit<8> value_size_out; // in bytes
     bool isRequest;
-    key_t key;
     value_t value;
 }

@@ -2,10 +2,10 @@
 # Copyright (c) 2017 Stephen Ibanez
 # All rights reserved.
 #
-# This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+# This software was developed by Stanford University and the University of Cambridge Computer Laboratory
 # under National Science Foundation under Grant No. CNS-0855268,
 # the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 # as part of the DARPA MRC research programme.
 #
 # @NETFPGA_LICENSE_HEADER_START@
@@ -36,16 +36,17 @@ class Digest_data(Packet):
     fields_desc = [
         ByteField("src_port", 0),
         LELongField("eth_src_addr", 0),
-        ShortField("unused3", 0),
-        LELongField("value_hash", 0),
-        ByteField("unused2", 0),
-        LELongField("key_hash", 0),
-        ShortField("unused1", 0),
+        ByteField("flags", 0),
+        ByteField("reg_addr", 0),
+        ByteField("value_size_out", 0),
+        LELongField("key2", 0),
+        LELongField("key1", 0),
+        ByteField("opcode", 0),
+        ByteField("magic", 0),
         ShortField("fuzz", 0)
     ]
     def mysummary(self):
         return self.sprintf("src_port=%op1% eth_src_addr=%eth_src_addr% unused=%unused%")
-    
+
 
 bind_layers(Digest_data, Raw)
-
