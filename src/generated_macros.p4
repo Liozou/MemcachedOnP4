@@ -15,6 +15,7 @@
 
 #define _PARSE_KEY state parse_extract_key_8 {\
   buffer.extract(hdr.key_8);\
+  user_metadata.key[55:0] = user_metadata.key[47:0] ++ hdr.key_8.key;\
   transition parse_key_null;\
 }\
 \
@@ -27,6 +28,7 @@ state parse_key_8 {\
 \
 state parse_extract_key_16 {\
   buffer.extract(hdr.key_16);\
+  user_metadata.key[47:0] = user_metadata.key[31:0] ++ hdr.key_16.key;\
   transition parse_key_8;\
 }\
 \
@@ -39,6 +41,7 @@ state parse_key_16 {\
 \
 state parse_extract_key_32 {\
   buffer.extract(hdr.key_32);\
+  user_metadata.key[31:0] = hdr.key_32.key;\
   transition parse_key_16;\
 }\
 \
@@ -53,11 +56,12 @@ state parse_key_32 {\
 
 #define _PARSE_VALUE state parse_extract_value_8 {\
   buffer.extract(hdr.value_8);\
+  user_metadata.value[247:0] = user_metadata.value[239:0] ++ hdr.value_8.value;\
   transition parse_value_null;\
 }\
 \
 state parse_value_8 {\
-  transition select(user_metadata.value_size_in[0:0]) {\
+  transition select(user_metadata.value_size[0:0]) {\
     1 : parse_extract_value_8;\
     _ : parse_value_null;\
   }\
@@ -65,11 +69,12 @@ state parse_value_8 {\
 \
 state parse_extract_value_16 {\
   buffer.extract(hdr.value_16);\
+  user_metadata.value[239:0] = user_metadata.value[223:0] ++ hdr.value_16.value;\
   transition parse_value_8;\
 }\
 \
 state parse_value_16 {\
-  transition select(user_metadata.value_size_in[1:1]) {\
+  transition select(user_metadata.value_size[1:1]) {\
     1 : parse_extract_value_16;\
     _ : parse_value_8;\
   }\
@@ -77,11 +82,12 @@ state parse_value_16 {\
 \
 state parse_extract_value_32 {\
   buffer.extract(hdr.value_32);\
+  user_metadata.value[223:0] = user_metadata.value[191:0] ++ hdr.value_32.value;\
   transition parse_value_16;\
 }\
 \
 state parse_value_32 {\
-  transition select(user_metadata.value_size_in[2:2]) {\
+  transition select(user_metadata.value_size[2:2]) {\
     1 : parse_extract_value_32;\
     _ : parse_value_16;\
   }\
@@ -89,11 +95,12 @@ state parse_value_32 {\
 \
 state parse_extract_value_64 {\
   buffer.extract(hdr.value_64);\
+  user_metadata.value[191:0] = user_metadata.value[127:0] ++ hdr.value_64.value;\
   transition parse_value_32;\
 }\
 \
 state parse_value_64 {\
-  transition select(user_metadata.value_size_in[3:3]) {\
+  transition select(user_metadata.value_size[3:3]) {\
     1 : parse_extract_value_64;\
     _ : parse_value_32;\
   }\
@@ -101,11 +108,12 @@ state parse_value_64 {\
 \
 state parse_extract_value_128 {\
   buffer.extract(hdr.value_128);\
+  user_metadata.value[127:0] = hdr.value_128.value;\
   transition parse_value_64;\
 }\
 \
 state parse_value_128 {\
-  transition select(user_metadata.value_size_in[4:4]) {\
+  transition select(user_metadata.value_size[4:4]) {\
     1 : parse_extract_value_128;\
     _ : parse_value_64;\
   }\
@@ -113,64 +121,28 @@ state parse_value_128 {\
 \
 
 
-#define POPULATE_KEY if (hdr.memcached.key_length[2:2]==1) {\
-  key_local[31:0] = hdr.key_32.key;\
-}\
-\
-if (hdr.memcached.key_length[1:1]==1) {\
-  key_local[47:0] = key_local[31:0] ++ hdr.key_16.key;\
-}\
-\
-if (hdr.memcached.key_length[0:0]==1) {\
-  key_local[55:0] = key_local[47:0] ++ hdr.key_8.key;\
-}\
-\
-
-
-#define POPULATE_VALUE if (value_size[4:4]==1) {\
-  value[127:0] = hdr.value_128.value;\
-}\
-\
-if (value_size[3:3]==1) {\
-  value[191:0] = value[127:0] ++ hdr.value_64.value;\
-}\
-\
-if (value_size[2:2]==1) {\
-  value[223:0] = value[191:0] ++ hdr.value_32.value;\
-}\
-\
-if (value_size[1:1]==1) {\
-  value[239:0] = value[223:0] ++ hdr.value_16.value;\
-}\
-\
-if (value_size[0:0]==1) {\
-  value[247:0] = value[239:0] ++ hdr.value_8.value;\
-}\
-\
-
-
 #define REPOPULATE_VALUE if (value_size_out[0:0] == 1) {\
   hdr.value_8.setValid();\
-  hdr.value_8.value = value[7:0];\
-  value[239:0] = value[247:8];\
+  hdr.value_8.value = user_metadata.value[7:0];\
+  user_metadata.value[239:0] = user_metadata.value[247:8];\
 }\
 \
 if (value_size_out[1:1] == 1) {\
   hdr.value_16.setValid();\
-  hdr.value_16.value = value[15:0];\
-  value[223:0] = value[239:16];\
+  hdr.value_16.value = user_metadata.value[15:0];\
+  user_metadata.value[223:0] = user_metadata.value[239:16];\
 }\
 \
 if (value_size_out[2:2] == 1) {\
   hdr.value_32.setValid();\
-  hdr.value_32.value = value[31:0];\
-  value[191:0] = value[223:32];\
+  hdr.value_32.value = user_metadata.value[31:0];\
+  user_metadata.value[191:0] = user_metadata.value[223:32];\
 }\
 \
 if (value_size_out[3:3] == 1) {\
   hdr.value_64.setValid();\
-  hdr.value_64.value = value[63:0];\
-  hdr.value_128.value = value[191:64];\
+  hdr.value_64.value = user_metadata.value[63:0];\
+  hdr.value_128.value = user_metadata.value[191:64];\
 }\
 \
 if (value_size_out[4:4] == 1) {\

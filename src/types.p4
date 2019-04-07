@@ -100,5 +100,7 @@ struct digest_data_t {
 }
 
 struct user_metadata_t {
-    bit<32> value_size_in;
+    bit<32> value_size;    // in bytes
+    key_t key;
+    value_t value;
 }

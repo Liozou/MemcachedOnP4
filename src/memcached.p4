@@ -31,7 +31,6 @@ control MemcachedControl(inout headers hdr,
 
     bit<8> value_size_out = 0;
     regAddr_t reg_addr = 0;
-    key_t key_local = 0;
     bit<12> slabID = 0;
 
     /* memcached_keyvalue: takes the key and returns a pointer to the value
@@ -45,7 +44,7 @@ control MemcachedControl(inout headers hdr,
         value_size_out = value_size_table;
     }
     table memcached_keyvalue {
-        key = { key_local: exact; }
+        key = { user_metadata.key: exact; }
         actions = { set_stored_info; }
         size = 1024;
     }
@@ -63,7 +62,7 @@ control MemcachedControl(inout headers hdr,
 
     apply {
 
-        if (user_metadata.value_size_in > 31) {
+        if (user_metadata.value_size > 31) {
             DROP
         }
         if (hdr.memcached.key_length > 120) {
@@ -76,12 +75,8 @@ control MemcachedControl(inout headers hdr,
             DROP
         }
 
-        bit<8> value_size = user_metadata.value_size_in[7:0];
+        bit<8> value_size = user_metadata.value_size[7:0];
         value_t value = 0;
-
-        POPULATE_KEY
-
-        POPULATE_VALUE
 
         bool is_stored_key = memcached_keyvalue.apply().hit;
 
@@ -110,7 +105,7 @@ control MemcachedControl(inout headers hdr,
                  * Indeed, _value_size_in == _value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
-                value_size_out = (bit<8>)value_size;
+                value_size_out = value_size;
 
                 if (value_size <= 8) { slabID = 1; }
                 else if (value_size <= 16) { slabID = 2; }
@@ -175,7 +170,7 @@ control MemcachedControl(inout headers hdr,
         digest_data.fuzz = 0xcafe;
         digest_data.magic = hdr.memcached.magic;
         digest_data.opcode = hdr.memcached.opcode;
-        digest_data.key = key_local;
+        digest_data.key = user_metadata.key;
         digest_data.value_size_out = value_size_out;
         digest_data.reg_addr = reg_addr;
 
