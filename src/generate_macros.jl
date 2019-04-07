@@ -25,11 +25,11 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
       end
     end
 
-    size = bit_size==0 ? "" : "((bit<$bit_size>)$store.$(key_or_value)) ++ "
+    size = bit_size==0 ? "" : "$store.$key_or_value[$(bit_size-1):0] ++ "
     ret *= join(split("""
     state parse_extract_$(key_or_value)_$n {
       buffer.extract(hdr.$(key_or_value)_$n);
-      $store.$(key_or_value) = (bit<$max_size>)($(size)hdr.$(key_or_value)_$n.$(key_or_value));
+      $store.$key_or_value[$(bit_size+n-1):0] = $(size)hdr.$(key_or_value)_$n.$key_or_value;
       transition parse_$(key_or_value)_$next;
     }
 
@@ -47,17 +47,38 @@ end
 
 function generate_repopulate_value(max_k=10, max_size=2040)
   ret = "#define REPOPULATE_VALUE "
-  for k in 3:max_k
+  rev_counter = max_size-1
+  for k in 3:max_k-2
     n = 2^k
     ret *= join(split("""
     if (user_metadata.value_size_out[$(k-3):$(k-3)] == 1) {
-      hdr.value_$n.value = (bit<$n>)user_metadata.value;
       hdr.value_$n.setValid();
-      $(k!=max_k ? "user_metadata.value = (user_metadata.value >> $n);" : "")
+      hdr.value_$n.value = user_metadata.value[$(n-1):0];
+      user_metadata.value[$(rev_counter-n):0] = user_metadata.value[$rev_counter:$n];
     }
 
     """, '\n'), "\\\n")
+    rev_counter -= n
   end
+
+  n = 2^(max_k-1)
+  ret *= join(split("""
+  if (user_metadata.value_size_out[$(max_k-4):$(max_k-4)] == 1) {
+    hdr.value_$n.setValid();
+    hdr.value_$n.value = user_metadata.value[$(n-1):0];
+    hdr.value_$(2^max_k).value = user_metadata.value[$rev_counter:$n];
+  }
+
+  """, '\n'), "\\\n")
+
+  n = 2^max_k
+  ret *= join(split("""
+  if (user_metadata.value_size_out[$(max_k-3):$(max_k-3)] == 1) {
+    hdr.value_$n.setValid();
+  }
+
+  """, '\n'), "\\\n")
+
   return ret*'\n'
 end
 
@@ -69,7 +90,7 @@ function main(file)
   n_key_max = 32
   size_key  = 56
   n_val_max = 128
-  size_val  = 280
+  size_val  = 248
   k_key_max = Int(log2(n_key_max))
   k_val_max = Int(log2(n_val_max))
   open(file, "w") do f
@@ -82,7 +103,7 @@ function main(file)
     #define PARSE_VALUE_TOP parse_value_$n_val_max
 
     #define INTERNAL_KEY_SIZE $size_key
-    #define INTERNAL_VALUE_SIZE $size_val
+    #define INTERNAL_VALUE_SIZE $(size_val+32)
     """)
     println(f, generate_parse_extract("key", "hdr.memcached.key_length", "user_metadata", size_key, k_key_max))
     println(f, generate_parse_extract("value", "user_metadata.value_size", "user_metadata", size_val, k_val_max))
