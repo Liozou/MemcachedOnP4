@@ -69,7 +69,7 @@ function main(file)
   n_key_max = 32
   size_key  = 56
   n_val_max = 128
-  size_val  = 248
+  size_val  = 280
   k_key_max = Int(log2(n_key_max))
   k_val_max = Int(log2(n_val_max))
   open(file, "w") do f
@@ -81,8 +81,8 @@ function main(file)
     #define PARSE_KEY_TOP parse_key_$n_key_max
     #define PARSE_VALUE_TOP parse_value_$n_val_max
 
-    #define INTERNAL_VALUE_SIZE $size_val
     #define INTERNAL_KEY_SIZE $size_key
+    #define INTERNAL_VALUE_SIZE $size_val
     """)
     println(f, generate_parse_extract("key", "hdr.memcached.key_length", "user_metadata", size_key, k_key_max))
     println(f, generate_parse_extract("value", "user_metadata.value_size", "user_metadata", size_val, k_val_max))

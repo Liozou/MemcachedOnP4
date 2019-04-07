@@ -10,8 +10,8 @@
 #define PARSE_KEY_TOP parse_key_32
 #define PARSE_VALUE_TOP parse_value_128
 
-#define INTERNAL_VALUE_SIZE 248
 #define INTERNAL_KEY_SIZE 56
+#define INTERNAL_VALUE_SIZE 280
 
 #define _PARSE_KEY state parse_extract_key_8 {\
   buffer.extract(hdr.key_8);\
@@ -56,7 +56,7 @@ state parse_key_32 {\
 
 #define _PARSE_VALUE state parse_extract_value_8 {\
   buffer.extract(hdr.value_8);\
-  user_metadata.value = (bit<248>)(((bit<240>)user_metadata.value) ++ hdr.value_8.value);\
+  user_metadata.value = (bit<280>)(((bit<240>)user_metadata.value) ++ hdr.value_8.value);\
   transition parse_value_null;\
 }\
 \
@@ -69,7 +69,7 @@ state parse_value_8 {\
 \
 state parse_extract_value_16 {\
   buffer.extract(hdr.value_16);\
-  user_metadata.value = (bit<248>)(((bit<224>)user_metadata.value) ++ hdr.value_16.value);\
+  user_metadata.value = (bit<280>)(((bit<224>)user_metadata.value) ++ hdr.value_16.value);\
   transition parse_value_8;\
 }\
 \
@@ -82,7 +82,7 @@ state parse_value_16 {\
 \
 state parse_extract_value_32 {\
   buffer.extract(hdr.value_32);\
-  user_metadata.value = (bit<248>)(((bit<192>)user_metadata.value) ++ hdr.value_32.value);\
+  user_metadata.value = (bit<280>)(((bit<192>)user_metadata.value) ++ hdr.value_32.value);\
   transition parse_value_16;\
 }\
 \
@@ -95,7 +95,7 @@ state parse_value_32 {\
 \
 state parse_extract_value_64 {\
   buffer.extract(hdr.value_64);\
-  user_metadata.value = (bit<248>)(((bit<128>)user_metadata.value) ++ hdr.value_64.value);\
+  user_metadata.value = (bit<280>)(((bit<128>)user_metadata.value) ++ hdr.value_64.value);\
   transition parse_value_32;\
 }\
 \
@@ -108,7 +108,7 @@ state parse_value_64 {\
 \
 state parse_extract_value_128 {\
   buffer.extract(hdr.value_128);\
-  user_metadata.value = (bit<248>)(hdr.value_128.value);\
+  user_metadata.value = (bit<280>)(hdr.value_128.value);\
   transition parse_value_64;\
 }\
 \
