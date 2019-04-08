@@ -51,7 +51,7 @@ function generate_repopulate_value(max_k=10, max_size=2040)
   for k in 3:max_k-2
     n = 2^k
     ret *= join(split("""
-    if (value_size_out[$(k-3):$(k-3)] == 1) {
+    if (user_metadata.value_size_out[$(k-3):$(k-3)] == 1) {
       hdr.value_$n.setValid();
       hdr.value_$n.value = user_metadata.value[$(n-1):0];
       user_metadata.value[$(rev_counter-n):0] = user_metadata.value[$rev_counter:$n];
@@ -63,7 +63,7 @@ function generate_repopulate_value(max_k=10, max_size=2040)
 
   n = 2^(max_k-1)
   ret *= join(split("""
-  if (value_size_out[$(max_k-4):$(max_k-4)] == 1) {
+  if (user_metadata.value_size_out[$(max_k-4):$(max_k-4)] == 1) {
     hdr.value_$n.setValid();
     hdr.value_$n.value = user_metadata.value[$(n-1):0];
     hdr.value_$(2^max_k).value = user_metadata.value[$rev_counter:$n];
@@ -73,7 +73,7 @@ function generate_repopulate_value(max_k=10, max_size=2040)
 
   n = 2^max_k
   ret *= join(split("""
-  if (value_size_out[$(max_k-3):$(max_k-3)] == 1) {
+  if (user_metadata.value_size_out[$(max_k-3):$(max_k-3)] == 1) {
     hdr.value_$n.setValid();
   }
 

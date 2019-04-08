@@ -92,7 +92,9 @@ struct digest_data_t {
     bit<32> expiration;
     bit<8> value_size_out;
     bit<8> reg_addr;
-    bit<6> reserved_flags;
+    bit<4> reserved_flags;
+    bool save_src_port;
+    bool packet_dropped;
     bool store_new_key;
     bool remove_this_key;
     bit<64> eth_src_addr;
@@ -101,6 +103,9 @@ struct digest_data_t {
 
 struct user_metadata_t {
     bit<32> value_size;    // in bytes
+    bool isRequest;
+    bit<8> value_size_out;
+    bit<8> reg_addr;
     key_t key;
     value_t value;
 }

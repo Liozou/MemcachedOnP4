@@ -8,8 +8,6 @@
 // #define PARSE_VALUE_TOP parse_value_1024
 // #define _PARSE_VALUE
 // #define _PARSE_KEY
-// #define POPULATE_KEY
-// #define POPULATE_VALUE
 // #define REPOPULATE_VALUE
 
 
@@ -43,7 +41,7 @@
 #define DEPARSE_VALUE _REPEAT_VALUE(_DEPARSE_VALUE)
 
 
-#define DROP {sume_metadata.dst_port = 0; return;}
+#define DROP {sume_metadata.dst_port = 0; digest_data.packet_dropped = true; return;}
 
 #define OP_IS_GET (hdr.memcached.opcode==0x00)
 #define OP_IS_SET (hdr.memcached.opcode==0x01)

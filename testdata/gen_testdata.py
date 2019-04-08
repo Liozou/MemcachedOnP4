@@ -223,9 +223,9 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
     if not src_known:
         src_port = portMap[src_ind]
         eth_src_addr = int(pkt[Ether].src.replace(':',''),16)
-
+        flags = 8
     else:
-        src_port = 0; eth_src_addr = 0
+        src_port = 0; eth_src_addr = 0; flags = 0
 
     sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 0
     sss_sdnet_tuples.dig_tuple_expect['src_port'] = src_port
@@ -233,9 +233,10 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
     sss_sdnet_tuples.dig_tuple_expect['magic'] = magic
     sss_sdnet_tuples.dig_tuple_expect['opcode'] = opcode
     sss_sdnet_tuples.dig_tuple_expect['fuzz'] = fuzz
+    sss_sdnet_tuples.dig_tuple_expect['flags'] = flags
 
     if isMemcached or not src_known:
-        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=inverse_hex_from_int(fuzz), key=int_key, magic=magic, opcode=opcode)
+        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=inverse_hex_from_int(fuzz), key=int_key, magic=magic, opcode=opcode, flags=flags)
         dma0_expected.append(digest_pkt)
         sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 1
 

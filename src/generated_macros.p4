@@ -121,31 +121,31 @@ state parse_value_128 {\
 \
 
 
-#define REPOPULATE_VALUE if (value_size_out[0:0] == 1) {\
+#define REPOPULATE_VALUE if (user_metadata.value_size_out[0:0] == 1) {\
   hdr.value_8.setValid();\
   hdr.value_8.value = user_metadata.value[7:0];\
   user_metadata.value[239:0] = user_metadata.value[247:8];\
 }\
 \
-if (value_size_out[1:1] == 1) {\
+if (user_metadata.value_size_out[1:1] == 1) {\
   hdr.value_16.setValid();\
   hdr.value_16.value = user_metadata.value[15:0];\
   user_metadata.value[223:0] = user_metadata.value[239:16];\
 }\
 \
-if (value_size_out[2:2] == 1) {\
+if (user_metadata.value_size_out[2:2] == 1) {\
   hdr.value_32.setValid();\
   hdr.value_32.value = user_metadata.value[31:0];\
   user_metadata.value[191:0] = user_metadata.value[223:32];\
 }\
 \
-if (value_size_out[3:3] == 1) {\
+if (user_metadata.value_size_out[3:3] == 1) {\
   hdr.value_64.setValid();\
   hdr.value_64.value = user_metadata.value[63:0];\
   hdr.value_128.value = user_metadata.value[191:64];\
 }\
 \
-if (value_size_out[4:4] == 1) {\
+if (user_metadata.value_size_out[4:4] == 1) {\
   hdr.value_128.setValid();\
 }\
 \
