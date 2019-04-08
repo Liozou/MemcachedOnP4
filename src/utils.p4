@@ -41,7 +41,7 @@
 #define DEPARSE_VALUE _REPEAT_VALUE(_DEPARSE_VALUE)
 
 
-#define DROP {sume_metadata.dst_port = 0; digest_data.packet_dropped = true; return;}
+#define DROP {sume_metadata.dst_port = 0; digest_data.packet_dropped = 1; return;}
 
 #define OP_IS_GET (hdr.memcached.opcode==0x00)
 #define OP_IS_SET (hdr.memcached.opcode==0x01)

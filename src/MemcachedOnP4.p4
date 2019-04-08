@@ -58,7 +58,7 @@ control TopPipe(inout headers hdr,
     action send_to_control() {
         digest_data.src_port = sume_metadata.src_port;
         digest_data.eth_src_addr = 16w0 ++ hdr.ethernet.srcAddr;
-        digest_data.save_src_port = true;
+        digest_data.save_src_port = 1;
         sume_metadata.send_dig_to_cpu = 1;
     }
 

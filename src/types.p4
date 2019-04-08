@@ -93,10 +93,10 @@ struct digest_data_t {
     bit<8> value_size_out;
     bit<8> reg_addr;
     bit<4> reserved_flags;
-    bool save_src_port;
-    bool packet_dropped;
-    bool store_new_key;
-    bool remove_this_key;
+    bit<1> save_src_port;
+    bit<1> packet_dropped;
+    bit<1> store_new_key;
+    bit<1> remove_this_key;
     bit<64> eth_src_addr;
     port_t src_port;
 }

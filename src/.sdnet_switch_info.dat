@@ -163,13 +163,13 @@
           {
             "px_name" : "lookup_request_padding",
             "type" : "bits",
-            "size" : 6
+            "size" : 4
           },
           {
             "px_name" : "lookup_request_key",
-            "p4_name" : "slabID",
+            "p4_name" : "hdr.memcached.data_type",
             "type" : "bits",
-            "size" : 6
+            "size" : 8
           }
         ],
         "annotations" : {
