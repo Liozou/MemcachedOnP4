@@ -50,17 +50,13 @@ control MemcachedControl(inout headers hdr,
      * Note that the address overwrites that set by memcached_keyvalue.
      */
 
-    action drop_packet() {
-        DROP
-    }
     action set_register_address(regAddr_t reg_addr) {
         user_metadata.reg_addr = reg_addr;
     }
     table register_address {
         key = { hdr.memcached.data_type: exact; }
-        actions = { set_register_address; drop_packet; }
+        actions = { set_register_address; }
         size = 64;
-        default_action = drop_packet(); // TODO uncomment when tables ready
     }
 
 
@@ -109,7 +105,9 @@ control MemcachedControl(inout headers hdr,
                 // else if (user_metadata.value_size <= 128) { hdr.memcached.data_type = 5; }
                 // else { hdr.memcached.data_type = 6; }
 
-                register_address.apply();
+                if(!register_address.apply().hit) {
+                    DROP
+                }
                 hdr.memcached.data_type = 0;
                 digest_data.store_new_key = 1;
                 digest_data.remove_this_key = (bit<1>)is_stored_key;
