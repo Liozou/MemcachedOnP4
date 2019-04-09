@@ -76,6 +76,15 @@ control TopPipe(inout headers hdr,
         }
 
         if (hdr.memcached.isValid()) {
+            if (user_metadata.value_size >= 32) {
+                DROP
+            }
+            if (hdr.memcached.key_length >= 8) {
+                DROP
+            }
+            if (!user_metadata.isRequest && hdr.memcached.magic != 0x81) {
+               DROP
+           }
             MemcachedControl.apply(hdr, user_metadata, digest_data, sume_metadata);
             // memctrl.apply();
         }

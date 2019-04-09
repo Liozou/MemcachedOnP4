@@ -223,7 +223,7 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
     if not src_known:
         src_port = portMap[src_ind]
         eth_src_addr = int(pkt[Ether].src.replace(':',''),16)
-        flags = 8
+        flags = 4
     else:
         src_port = 0; eth_src_addr = 0; flags = 0
 
