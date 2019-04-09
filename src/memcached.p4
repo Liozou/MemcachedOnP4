@@ -93,14 +93,12 @@ control MemcachedControl(inout headers hdr,
 
                 if (user_metadata.value_size <= 8) { hdr.memcached.data_type = 1; }
                 else if (user_metadata.value_size <= 16) { hdr.memcached.data_type = 2; }
-                else if (user_metadata.value_size < 32) { hdr.memcached.data_type = 3; }
+                else { hdr.memcached.data_type = 3; }
                 // else if (user_metadata.value_size <= 64) { hdr.memcached.data_type = 4; }
                 // else if (user_metadata.value_size <= 128) { hdr.memcached.data_type = 5; }
                 // else { hdr.memcached.data_type = 6; }
 
-                if(!register_address.apply().hit) {
-                    DROP
-                }
+                register_address.apply();
                 hdr.memcached.data_type = 0;
                 digest_data.store_new_key = 1;
                 digest_data.remove_this_key = (bit<1>)is_stored_key;
@@ -128,10 +126,8 @@ control MemcachedControl(inout headers hdr,
                 slab64_reg_rw((regAddr64)user_metadata.reg_addr, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
             } else if (user_metadata.value_size_out <= 16) {
                 slab128_reg_rw((regAddr128)user_metadata.reg_addr, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
-            } else if (user_metadata.value_size_out < 32) {
-                slab256_reg_rw((regAddr256)user_metadata.reg_addr, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
             } else {
-                DROP
+                slab256_reg_rw((regAddr256)user_metadata.reg_addr, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
             }
 
         }
