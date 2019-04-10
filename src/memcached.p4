@@ -62,6 +62,10 @@ control MemcachedControl(inout headers hdr,
 
     apply {
 
+        if (user_metadata.value_size > 31 || hdr.memcached.key_length > 7) {
+            return;
+        }
+
         bool is_stored_key = memcached_keyvalue.apply().hit;
 
         bool do_reg_operation = (OP_IS_GET || OP_IS_GETK) && is_stored_key;

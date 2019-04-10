@@ -92,8 +92,7 @@ struct digest_data_t {
     bit<32> expiration;
     bit<8> value_size_out;
     bit<8> reg_addr;
-    bit<4> reserved_flags;
-    bit<1> packet_dropped;
+    bit<5> reserved_flags;
     bit<1> save_src_port;
     bit<1> store_new_key;
     bit<1> remove_this_key;
