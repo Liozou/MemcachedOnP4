@@ -56,7 +56,7 @@ parser TopParser(packet_in buffer,
         digest_data.unused = 0;
         digest_data.key = 0;
         digest_data.expiration = 0;
-        digest_data.flags_value = 0;
+        digest_data.padding = 0;
         digest_data.value_size_out = 0;
         digest_data.reg_addr = 0;
         digest_data.reserved_flags = 0;

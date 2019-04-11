@@ -88,11 +88,11 @@ struct digest_data_t {
     bit<8> opcode;
     bit<8> unused;
     bit<56> key;
-    bit<32> flags_value;
     bit<32> expiration;
-    bit<8> value_size_out;
+    bit<3> padding;
+    bit<5> value_size_out;
     bit<8> reg_addr;
-    bit<5> reserved_flags;
+    bit<37> reserved_flags;
     bit<1> save_src_port;
     bit<1> store_new_key;
     bit<1> remove_this_key;
@@ -103,7 +103,7 @@ struct digest_data_t {
 struct user_metadata_t {
     bit<32> value_size;    // in bytes
     bool isRequest;
-    bit<8> value_size_out;
+    bit<5> value_size_out;
     bit<8> reg_addr;
     key_t key;
     value_t value;

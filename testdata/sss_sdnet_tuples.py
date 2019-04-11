@@ -49,10 +49,10 @@ tuple_expect_file = "Tuple_expect.txt"
    magic           (8 bits)
    opcode          (8 bits)
    key             (64 bits)
-   flags_value     (32 bits)
    expiration      (32 bits)
    value_size_out  (8 bits)
    reg_addr        (8 bits)
+   unused          (32 bits)
    flags           (8 bits)
    eth_src_addr    (64 bits)
    src_port        (8 bits)
@@ -63,10 +63,10 @@ dig_field_len['fuzz'] = 16
 dig_field_len['magic'] = 8
 dig_field_len['opcode'] = 8
 dig_field_len['key'] = 64
-dig_field_len['flags_value'] = 32
 dig_field_len['expiration'] = 32
 dig_field_len['value_size_out'] = 8
 dig_field_len['reg_addr'] = 8
+dig_field_len['unused'] = 32
 dig_field_len['flags'] = 8
 dig_field_len['eth_src_addr'] = 64
 dig_field_len['src_port'] = 8
@@ -77,10 +77,10 @@ dig_tuple_expect['fuzz'] = 0
 dig_tuple_expect['magic'] = 0
 dig_tuple_expect['opcode'] = 0
 dig_tuple_expect['key'] = 0
-dig_tuple_expect['flags_value'] = 0
 dig_tuple_expect['expiration'] = 0
 dig_tuple_expect['value_size_out'] = 0
 dig_tuple_expect['reg_addr'] = 0
+dig_tuple_expect['unused'] = 0
 dig_tuple_expect['flags'] = 0
 dig_tuple_expect['eth_src_addr'] = 0
 dig_tuple_expect['src_port'] = 0

@@ -44,3 +44,7 @@ table_cam_add_entry smac NoAction 08:33:33:33:33:08 =>
 table_cam_add_entry smac NoAction 08:44:44:44:44:08 => 
 table_cam_add_entry smac NoAction ff:ff:ff:ff:ff:ff => 
 
+table_cam_add_entry MemcachedControl_register_address_0 MemcachedControl.set_register_address 1 => 0
+table_cam_add_entry MemcachedControl_register_address_0 MemcachedControl.set_register_address 2 => 0
+table_cam_add_entry MemcachedControl_register_address_0 MemcachedControl.set_register_address 3 => 0
+
