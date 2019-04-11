@@ -30,6 +30,21 @@ control TopPipe(inout headers hdr,
         default_action = NoAction;
     }
 
+    action set_broadcast(port_t port) {
+        sume_metadata.dst_port = port;
+    }
+
+    table broadcast {
+        key = { sume_metadata.src_port: exact; }
+
+        actions = {
+            set_broadcast;
+            NoAction;
+        }
+        size = 64;
+        default_action = NoAction;
+    }
+
     table smac {
         key = { hdr.ethernet.srcAddr: exact; }
 
@@ -51,18 +66,7 @@ control TopPipe(inout headers hdr,
         // try to forward based on destination Ethernet address
         if (!forward.apply().hit) {
             // miss in forwarding table
-            if (sume_metadata.src_port[0:0]==1) {
-                sume_metadata.dst_port = 8w0b01010100;
-            }
-            if (sume_metadata.src_port[2:2]==1) {
-                sume_metadata.dst_port = 8w0b01010001;
-            }
-            if (sume_metadata.src_port[4:4]==1) {
-                sume_metadata.dst_port = 8w0b01000101;
-            }
-            if (sume_metadata.src_port[6:6]==1) {
-                sume_metadata.dst_port = 8w0b00010101;
-            }
+            broadcast.apply();
         }
 
         // check if src Ethernet address is in the forwarding database

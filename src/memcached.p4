@@ -42,7 +42,7 @@ control MemcachedControl(inout headers hdr,
     table memcached_keyvalue {
         key = { user_metadata.key: exact; }
         actions = { set_stored_info; }
-        size = 1024;
+        size = 448;
     }
 
     /* register_address_##n : no argument, returns an available register address
