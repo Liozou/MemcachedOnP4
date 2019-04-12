@@ -26,7 +26,8 @@ extern void slab256_reg_rw(in regAddr256 index,
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
-                inout digest_data_t digest_data) {
+                inout digest_data_t digest_data,
+                inout sume_metadata_t sume_metadata) {
 
     /* memcached_keyvalue: takes the key and returns a pointer to the value
      * (ie the value size to get the slab and the register address) and the
@@ -62,19 +63,21 @@ control MemcachedControl(inout headers hdr,
     apply {
 
         if (user_metadata.value_size > 31 || hdr.memcached.key_length > 7) {
+            // Forward the packet to or back from the server as a normal packet
+            // Do not record anything on the switch
             return;
         }
 
-        bool is_stored_key = memcached_keyvalue.apply().hit;
+        digest_data.magic = hdr.memcached.magic;
+        digest_data.opcode = hdr.memcached.opcode;
 
-        bool do_reg_operation = (OP_IS_GET || OP_IS_GETK) && is_stored_key;
+        bool is_stored_key = memcached_keyvalue.apply().hit;
 
         bit<8> reg_opcode = REG_READ;
 
         if ((user_metadata.isRequest && OP_IS_SET) ||
            (!user_metadata.isRequest && OP_IS_GETK)) {
 
-            do_reg_operation = true;
             bit<5> x_value_size_in = user_metadata.value_size[4:0];
             x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
             x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
@@ -89,7 +92,7 @@ control MemcachedControl(inout headers hdr,
                 /* This will be executed either if memcached_keyvalue was a miss
                  * (because then value_size_out = 0) or if it was a hit but the
                  * stored value is not in the same slab as the new value.
-                 * Indeed, _value_size_in == _value_size_out if and only if
+                 * Indeed, x_value_size_in == x_value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
                 user_metadata.value_size_out = user_metadata.value_size[4:0];
@@ -114,58 +117,56 @@ control MemcachedControl(inout headers hdr,
 
         }
 
-        if (do_reg_operation) {
-            /* slab##n##_reg_rw corresponds to the slab for values of size
-             * at most n bits.
-             * The last slab has size 248, which corresponds to the maximum
-             * size that can be stored by filling headers 8, 16, 32, 64, 128.
-             * Recall that value_size_out is expressed in bytes. Since
-             * 248 bits = 31 bytes, value_size_out can only take values
-             * between 1 and 31, hence it can be stored on 5 bits.
-             */
 
-            if (user_metadata.value_size_out <= 8) {
-                slab64_reg_rw((regAddr64)user_metadata.reg_addr, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
-            } else if (user_metadata.value_size_out <= 16) {
-                slab128_reg_rw((regAddr128)user_metadata.reg_addr, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
-            } else {
-                slab256_reg_rw((regAddr256)user_metadata.reg_addr, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
-            }
-
+        /* slab##n##_reg_rw corresponds to the slab for values of size
+         * at most n bits.
+         * The last slab has size 248, which corresponds to the maximum
+         * size that can be stored by filling headers 8, 16, 32, 64, 128.
+         * Recall that value_size_out is expressed in bytes. Since
+         * 248 bits = 31 bytes, value_size_out can only take values
+         * between 1 and 31, hence it can be stored on 5 bits.
+         */
+        if (user_metadata.value_size_out <= 8) {
+            slab64_reg_rw((regAddr64)user_metadata.reg_addr, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
+        } else if (user_metadata.value_size_out <= 16) {
+            slab128_reg_rw((regAddr128)user_metadata.reg_addr, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
+        } else {
+            slab256_reg_rw((regAddr256)user_metadata.reg_addr, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
         }
 
-        if (user_metadata.isRequest) {
 
-            if (OP_IS_GET || OP_IS_GETK) {
-                if (is_stored_key) {
-                    hdr.extras_flags.setValid();
-                    hdr.extras_flags.flags = user_metadata.value[31:0];
-                    user_metadata.value[INTERNAL_VALUE_SIZE-33:0] = user_metadata.value[INTERNAL_VALUE_SIZE-1:32];
-                    REPOPULATE_VALUE
-                    if (OP_IS_GETK) {
-                        hdr.memcached.total_body = (bit<32>)((bit<16>)user_metadata.value_size_out + hdr.memcached.key_length + 4);
-                    } else {
-                        UNSET_KEY
-                        hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
-                    }
+        if (user_metadata.isRequest && (OP_IS_GET || OP_IS_GETK)) {
 
-                    hdr.memcached.magic = 0x81; // Returning a response packet
-                    hdr.memcached.vbucket_id = 0; // No error
-                    user_metadata.send_back_port = true;
-                    bit<48> tmp = hdr.ethernet.dstAddr;
-                    hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
-                    hdr.ethernet.srcAddr = tmp;
-
+            if (is_stored_key) {
+                hdr.extras_flags.setValid();
+                hdr.extras_flags.flags = user_metadata.value[31:0];
+                user_metadata.value[INTERNAL_VALUE_SIZE-33:0] = user_metadata.value[INTERNAL_VALUE_SIZE-1:32];
+                REPOPULATE_VALUE
+                if (OP_IS_GETK) {
+                    hdr.memcached.total_body = (bit<32>)((bit<16>)user_metadata.value_size_out + hdr.memcached.key_length + 4);
                 } else {
-                    hdr.memcached.opcode = 0x0c; // GETK
+                    UNSET_KEY
+                    hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
                 }
+
+                hdr.memcached.magic = 0x81; // Returning a response packet
+                hdr.memcached.vbucket_id = 0; // No error
+                sume_metadata.dst_port = sume_metadata.src_port;
+                bit<48> tmp = hdr.ethernet.dstAddr;
+                hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
+                hdr.ethernet.srcAddr = tmp;
+
+            } else {
+                hdr.memcached.opcode = 0x0c; // GETK
             }
 
         }
 
-        digest_data.fuzz = 0xcafe;
-        digest_data.magic = hdr.memcached.magic;
-        digest_data.opcode = hdr.memcached.opcode;
+        sume_metadata.send_dig_to_cpu = 1;
+
+        /* The next values are copied back from user_metadata instead of being
+         * directly modified on the digest because it leads to better timing
+         * performance */
         digest_data.key = user_metadata.key;
         digest_data.value_size_out = user_metadata.value_size_out;
         digest_data.reg_addr = user_metadata.reg_addr;

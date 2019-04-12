@@ -140,7 +140,7 @@ def compute_simple_hash(obj, max_length=64):
 def test_hash(n):
     return compute_simple_hash(generate_obj(bits_from_int(n, 1+int(log(max(n,1),2)))))
 
-def inverse_hex_from_int(n):
+def inverse_endianness(n):
     x = hex(n)[2:]
     if len(x)%2==1:
         x = "0" + x
@@ -209,14 +209,12 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
     if isMemcached:
         print "Memcached Packet with key = ", hex(int_from_string(key))
         int_key = int_from_string(key);
-        fuzz = int('cafe', 16)
         magic = int('80', 16)
         opcode = int('0c',16)
         sss_sdnet_tuples.dig_tuple_expect['key'] = int_from_string(key)
     else:
         print "Non-M Packet"
         int_key = 0; magic = 0; opcode = 0
-        fuzz = int('bbbb', 16)
         sss_sdnet_tuples.dig_tuple_expect['key'] = 0
 
     # If src MAC address is unknown, send over DMA
@@ -232,11 +230,10 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
     sss_sdnet_tuples.dig_tuple_expect['eth_src_addr'] = eth_src_addr
     sss_sdnet_tuples.dig_tuple_expect['magic'] = magic
     sss_sdnet_tuples.dig_tuple_expect['opcode'] = opcode
-    sss_sdnet_tuples.dig_tuple_expect['fuzz'] = fuzz
     sss_sdnet_tuples.dig_tuple_expect['flags'] = flags
 
     if isMemcached or not src_known:
-        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=inverse_hex_from_int(fuzz), key=int_key, magic=magic, opcode=opcode, flags=flags)
+        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, key=int_key, magic=magic, opcode=opcode, flags=flags)
         dma0_expected.append(digest_pkt)
         sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 1
 
@@ -285,7 +282,7 @@ for i in range(20):
         dst_MAC = ETH_UNKNOWN[dst_ind]
 
     if isMemcached:
-        memcachedPkt, key, value = make_memcached_pkt("GETK", random.randint(1,7), random.randint(1,15))
+        memcachedPkt, key, value = make_memcached_pkt("GETK", random.randint(1,7), random.randint(1,31))
         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211) / memcachedPkt
     else:
         key = 0; value = 0

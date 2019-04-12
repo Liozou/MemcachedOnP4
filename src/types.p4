@@ -83,16 +83,16 @@ struct headers {
 
 // digest data to send to cpu if desired
 struct digest_data_t {
-    bit<16> fuzz;
+    bit<48> padding1;
     bit<8> magic;
     bit<8> opcode;
-    bit<8> unused;
+    bit<8> padding2;
     bit<56> key;
     bit<32> expiration;
-    bit<3> padding;
+    bit<3> padding3;
     bit<5> value_size_out;
     bit<8> reg_addr;
-    bit<37> reserved_flags;
+    bit<5> reserved_flags;
     bit<1> save_src_port;
     bit<1> store_new_key;
     bit<1> remove_this_key;
@@ -103,7 +103,6 @@ struct digest_data_t {
 struct user_metadata_t {
     bit<32> value_size;    // in bytes
     bool isRequest;
-    bool send_back_port;
     bit<5> value_size_out;
     bit<8> reg_addr;
     key_t key;

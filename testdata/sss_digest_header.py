@@ -37,14 +37,14 @@ class Digest_data(Packet):
         ByteField("src_port", 0),
         LELongField("eth_src_addr", 0),
         ByteField("flags", 0),
-        IntField("unused", 0),
         ByteField("reg_addr", 0),
         ByteField("value_size_out", 0),
-        IntField("expiration", 0),
+        LEIntField("expiration", 0),
         LELongField("key", 0),
         ByteField("opcode", 0),
         ByteField("magic", 0),
-        ShortField("fuzz", 0)
+        ShortField("padding_2", 0),
+        IntField("padding_1", 0)
     ]
     def mysummary(self):
         return self.sprintf("src_port=%op1% eth_src_addr=%eth_src_addr% unused=%unused%")

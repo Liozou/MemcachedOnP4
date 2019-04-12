@@ -30,6 +30,21 @@ control TopPipe(inout headers hdr,
         default_action = NoAction;
     }
 
+    action set_broadcast(port_t port) {
+        sume_metadata.dst_port = port;
+    }
+
+    table broadcast {
+        key = { sume_metadata.src_port: exact; }
+
+        actions = {
+            set_broadcast;
+            NoAction;
+        }
+        size = 64;
+        default_action = NoAction;
+    }
+
     table smac {
         key = { hdr.ethernet.srcAddr: exact; }
 
@@ -50,8 +65,8 @@ control TopPipe(inout headers hdr,
     apply {
         // try to forward based on destination Ethernet address
         if (!forward.apply().hit) {
-            sume_metadata.dst_port = 8w0b01010101 & (~sume_metadata.src_port);
-            // broadcast with src_port pruning
+            // miss in forwarding table
+            broadcast.apply();
         }
 
         // check if src Ethernet address is in the forwarding database
@@ -61,12 +76,7 @@ control TopPipe(inout headers hdr,
         }
 
         if (hdr.memcached.isValid()) {
-            MemcachedControl.apply(hdr, user_metadata, digest_data);
-            sume_metadata.send_dig_to_cpu = 1;
-        }
-
-        if (user_metadata.send_back_port) {
-            sume_metadata.dst_port = sume_metadata.src_port;
+            MemcachedControl.apply(hdr, user_metadata, digest_data, sume_metadata);
         }
     }
 }
