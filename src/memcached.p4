@@ -26,8 +26,7 @@ extern void slab256_reg_rw(in regAddr256 index,
 
 control MemcachedControl(inout headers hdr,
                 inout user_metadata_t user_metadata,
-                inout digest_data_t digest_data,
-                inout sume_metadata_t sume_metadata) {
+                inout digest_data_t digest_data) {
 
     /* memcached_keyvalue: takes the key and returns a pointer to the value
      * (ie the value size to get the slab and the register address) and the
@@ -152,7 +151,7 @@ control MemcachedControl(inout headers hdr,
 
                     hdr.memcached.magic = 0x81; // Returning a response packet
                     hdr.memcached.vbucket_id = 0; // No error
-                    sume_metadata.dst_port = sume_metadata.src_port;
+                    user_metadata.send_back_port = true;
                     bit<48> tmp = hdr.ethernet.dstAddr;
                     hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
                     hdr.ethernet.srcAddr = tmp;
@@ -164,7 +163,6 @@ control MemcachedControl(inout headers hdr,
 
         }
 
-        sume_metadata.send_dig_to_cpu = 1;
         digest_data.fuzz = 0xcafe;
         digest_data.magic = hdr.memcached.magic;
         digest_data.opcode = hdr.memcached.opcode;

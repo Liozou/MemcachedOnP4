@@ -45,6 +45,7 @@ parser TopParser(packet_in buffer,
     state start {
         user_metadata.value_size = 0;
         user_metadata.isRequest = false;
+        user_metadata.send_back_port = false;
         user_metadata.value_size_out = 0;
         user_metadata.reg_addr = 0;
         user_metadata.key = 0;
