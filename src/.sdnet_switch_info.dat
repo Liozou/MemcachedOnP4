@@ -179,6 +179,94 @@
         }
       },
       {
+        "px_name" : "smac",
+        "p4_name" : "smac",
+        "px_class" : "LookupEngine",
+        "px_type_name" : "smac_t",
+        "match_type" : "EM",
+        "action_ids" : {
+          ".NoAction" : 1
+        },
+        "response_fields" : [
+          {
+            "px_name" : "hit",
+            "type" : "bits",
+            "size" : 1
+          },
+          {
+            "px_name" : "action_run",
+            "type" : "bits",
+            "size" : 1
+          }
+        ],
+        "request_fields" : [
+          {
+            "px_name" : "lookup_request_key_1",
+            "p4_name" : "hdr.ethernet.srcAddr",
+            "type" : "bits",
+            "size" : 48
+          }
+        ],
+        "annotations" : {
+          "name" : ["TopPipe.smac"],
+          "Xilinx_ExternallyConnected" : ["0"],
+          "Xilinx_LookupEngineType" : ["EM"]
+        }
+      },
+      {
+        "px_name" : "broadcast",
+        "p4_name" : "broadcast",
+        "px_class" : "LookupEngine",
+        "px_type_name" : "broadcast_t",
+        "match_type" : "EM",
+        "action_ids" : {
+          "TopPipe.set_broadcast" : 1,
+          ".NoAction" : 2
+        },
+        "response_fields" : [
+          {
+            "px_name" : "hit",
+            "type" : "bits",
+            "size" : 1
+          },
+          {
+            "px_name" : "action_run",
+            "type" : "bits",
+            "size" : 2
+          },
+          {
+            "px_name" : "set_broadcast_0",
+            "type" : "struct",
+            "fields" : [
+              {
+                "px_name" : "port",
+                "type" : "bits",
+                "size" : 8
+              }
+            ],
+            "p4_action" : "TopPipe.set_broadcast"
+          }
+        ],
+        "request_fields" : [
+          {
+            "px_name" : "lookup_request_padding_0",
+            "type" : "bits",
+            "size" : 4
+          },
+          {
+            "px_name" : "lookup_request_key_2",
+            "p4_name" : "sume_metadata.src_port",
+            "type" : "bits",
+            "size" : 8
+          }
+        ],
+        "annotations" : {
+          "name" : ["TopPipe.broadcast"],
+          "Xilinx_ExternallyConnected" : ["0"],
+          "Xilinx_LookupEngineType" : ["EM"]
+        }
+      },
+      {
         "px_name" : "forward",
         "p4_name" : "forward",
         "px_class" : "LookupEngine",
@@ -278,144 +366,9 @@
           "Xilinx_ExternallyConnected" : ["0"],
           "Xilinx_LookupEngineType" : ["EM"]
         }
-      },
-      {
-        "px_name" : "smac",
-        "p4_name" : "smac",
-        "px_class" : "LookupEngine",
-        "px_type_name" : "smac_t",
-        "match_type" : "EM",
-        "action_ids" : {
-          ".NoAction" : 1
-        },
-        "response_fields" : [
-          {
-            "px_name" : "hit",
-            "type" : "bits",
-            "size" : 1
-          },
-          {
-            "px_name" : "action_run",
-            "type" : "bits",
-            "size" : 1
-          }
-        ],
-        "request_fields" : [
-          {
-            "px_name" : "lookup_request_key_1",
-            "p4_name" : "hdr.ethernet.srcAddr",
-            "type" : "bits",
-            "size" : 48
-          }
-        ],
-        "annotations" : {
-          "name" : ["TopPipe.smac"],
-          "Xilinx_ExternallyConnected" : ["0"],
-          "Xilinx_LookupEngineType" : ["EM"]
-        }
-      },
-      {
-        "px_name" : "broadcast",
-        "p4_name" : "broadcast",
-        "px_class" : "LookupEngine",
-        "px_type_name" : "broadcast_t",
-        "match_type" : "EM",
-        "action_ids" : {
-          "TopPipe.set_broadcast" : 1,
-          ".NoAction" : 2
-        },
-        "response_fields" : [
-          {
-            "px_name" : "hit",
-            "type" : "bits",
-            "size" : 1
-          },
-          {
-            "px_name" : "action_run",
-            "type" : "bits",
-            "size" : 2
-          },
-          {
-            "px_name" : "set_broadcast_0",
-            "type" : "struct",
-            "fields" : [
-              {
-                "px_name" : "port",
-                "type" : "bits",
-                "size" : 8
-              }
-            ],
-            "p4_action" : "TopPipe.set_broadcast"
-          }
-        ],
-        "request_fields" : [
-          {
-            "px_name" : "lookup_request_padding_0",
-            "type" : "bits",
-            "size" : 4
-          },
-          {
-            "px_name" : "lookup_request_key_2",
-            "p4_name" : "sume_metadata.src_port",
-            "type" : "bits",
-            "size" : 8
-          }
-        ],
-        "annotations" : {
-          "name" : ["TopPipe.broadcast"],
-          "Xilinx_ExternallyConnected" : ["0"],
-          "Xilinx_LookupEngineType" : ["EM"]
-        }
       }
     ],
     "px_user_engines" : [
-      {
-        "px_name" : "slab256_reg_rw_0",
-        "p4_name" : "slab256_reg_rw_0",
-        "px_class" : "UserEngine",
-        "px_type_name" : "slab256_reg_rw_0_t",
-        "input_decl" : {
-          "px_name" : "slab256_reg_rw_input",
-          "px_type_name" : "slab256_reg_rw_input_t"
-        },
-        "output_decl" : {
-          "px_name" : "slab256_reg_rw_output",
-          "px_type_name" : "slab256_reg_rw_output_t"
-        },
-        "input_fields" : [
-          {
-            "px_name" : "stateful_valid_1",
-            "type" : "bits",
-            "size" : 1
-          },
-          {
-            "px_name" : "index",
-            "type" : "bits",
-            "size" : 6
-          },
-          {
-            "px_name" : "newVal",
-            "type" : "bits",
-            "size" : 280
-          },
-          {
-            "px_name" : "opCode",
-            "type" : "bits",
-            "size" : 8
-          }
-        ],
-        "output_fields" : [
-          {
-            "px_name" : "result",
-            "type" : "bits",
-            "size" : 280
-          }
-        ],
-        "annotations" : {
-          "Xilinx_MaxLatency" : ["1"],
-          "Xilinx_ControlWidth" : ["6"]
-        }
-      },
       {
         "px_name" : "slab64_reg_rw_0",
         "p4_name" : "slab64_reg_rw_0",
@@ -461,6 +414,53 @@
         "annotations" : {
           "Xilinx_MaxLatency" : ["1"],
           "Xilinx_ControlWidth" : ["8"]
+        }
+      },
+      {
+        "px_name" : "slab256_reg_rw_0",
+        "p4_name" : "slab256_reg_rw_0",
+        "px_class" : "UserEngine",
+        "px_type_name" : "slab256_reg_rw_0_t",
+        "input_decl" : {
+          "px_name" : "slab256_reg_rw_input",
+          "px_type_name" : "slab256_reg_rw_input_t"
+        },
+        "output_decl" : {
+          "px_name" : "slab256_reg_rw_output",
+          "px_type_name" : "slab256_reg_rw_output_t"
+        },
+        "input_fields" : [
+          {
+            "px_name" : "stateful_valid_1",
+            "type" : "bits",
+            "size" : 1
+          },
+          {
+            "px_name" : "index",
+            "type" : "bits",
+            "size" : 6
+          },
+          {
+            "px_name" : "newVal",
+            "type" : "bits",
+            "size" : 280
+          },
+          {
+            "px_name" : "opCode",
+            "type" : "bits",
+            "size" : 8
+          }
+        ],
+        "output_fields" : [
+          {
+            "px_name" : "result",
+            "type" : "bits",
+            "size" : 280
+          }
+        ],
+        "annotations" : {
+          "Xilinx_MaxLatency" : ["1"],
+          "Xilinx_ControlWidth" : ["6"]
         }
       },
       {

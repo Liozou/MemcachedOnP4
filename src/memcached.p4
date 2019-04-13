@@ -68,6 +68,20 @@ control MemcachedControl(inout headers hdr,
 
         bool is_stored_key = memcached_keyvalue.apply().hit;
 
+        if (user_metadata.isRequest && hdr.memcached.CAS != 0) {
+            // Unsupported operation, but the server should answer it.
+            // This makes the control place remove the key from the table.
+            sume_metadata.send_dig_to_cpu = 1;
+            digest_data.magic = hdr.memcached.magic;
+            digest_data.opcode = 8w0xff; // Invalid opcode (to prevent triggering any undesired behaviour from the control plane)
+            digest_data.key = user_metadata.key;
+            digest_data.value_size_out = user_metadata.value_size[4:0];
+            digest_data.reg_addr = user_metadata.reg_addr;
+            digest_data.remove_this_key = (bit<1>)is_stored_key;
+            return;
+        }
+
+
         bool do_reg_operation = (OP_IS_GET || OP_IS_GETK) && is_stored_key;
 
         bit<8> reg_opcode = REG_READ;
@@ -85,22 +99,19 @@ control MemcachedControl(inout headers hdr,
             x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
             x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
 
+            user_metadata.value_size_out = user_metadata.value_size[4:0];
             reg_opcode = REG_WRITE;
             if (x_value_size_in != x_value_size_out) {
                 /* This will be executed either if memcached_keyvalue was a miss
                  * (because then value_size_out = 0) or if it was a hit but the
                  * stored value is not in the same slab as the new value.
-                 * Indeed, _value_size_in == _value_size_out if and only if
+                 * Indeed, x_value_size_in == x_value_size_out if and only if
                  * value_size_out and value_size have the same highest set bit.
                  */
-                user_metadata.value_size_out = user_metadata.value_size[4:0];
 
-                if (user_metadata.value_size <= 8) { hdr.memcached.data_type = 1; }
-                else if (user_metadata.value_size <= 16) { hdr.memcached.data_type = 2; }
+                if (user_metadata.value_size_out <= 8) { hdr.memcached.data_type = 1; }
+                else if (user_metadata.value_size_out <= 16) { hdr.memcached.data_type = 2; }
                 else { hdr.memcached.data_type = 3; }
-                // else if (user_metadata.value_size <= 64) { hdr.memcached.data_type = 4; }
-                // else if (user_metadata.value_size <= 128) { hdr.memcached.data_type = 5; }
-                // else { hdr.memcached.data_type = 6; }
 
                 register_address.apply();
                 hdr.memcached.data_type = 0;
