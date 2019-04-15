@@ -45,15 +45,16 @@ control MemcachedControl(inout headers hdr,
         size = 448;
     }
 
-    /* register_address_##n : no argument, returns an available register address
-     * for slab n.
+    /* register_address : takes a slabID as key and returns an available
+     * register address for the corresponding slab.
      * Note that the address overwrites that set by memcached_keyvalue.
      */
 
     action set_register_address(regAddr_t reg_addr) {
         user_metadata.reg_addr = reg_addr;
     }
-    bit<12> slabID = 0;
+
+    bit<12> slabID;
     table register_address {
         key = { slabID: exact; }
         actions = { set_register_address; }
@@ -69,6 +70,7 @@ control MemcachedControl(inout headers hdr,
 
         bool is_stored_key = memcached_keyvalue.apply().hit;
 
+        /*
         if (user_metadata.isRequest && hdr.memcached.CAS != 0) {
             // Unsupported operation, but the server should answer it.
             // This makes the control place remove the key from the table.
@@ -81,6 +83,7 @@ control MemcachedControl(inout headers hdr,
             digest_data.remove_this_key = (bit<1>)is_stored_key;
             return;
         }
+        */
 
 
         bool do_reg_operation = (OP_IS_GET || OP_IS_GETK) && is_stored_key;
@@ -110,7 +113,6 @@ control MemcachedControl(inout headers hdr,
                  * value_size_out and value_size have the same highest set bit.
                  */
 
-                slabID = 0;
                 if (user_metadata.value_size_out <= 8) { slabID = 1; }
                 else if (user_metadata.value_size_out <= 16) { slabID = 2; }
                 else { slabID = 3; }
