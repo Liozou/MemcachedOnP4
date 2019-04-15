@@ -2,10 +2,10 @@
 # Copyright (c) 2017 Stephen Ibanez
 # All rights reserved.
 #
-# This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+# This software was developed by Stanford University and the University of Cambridge Computer Laboratory
 # under National Science Foundation under Grant No. CNS-0855268,
 # the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 # as part of the DARPA MRC research programme.
 #
 # @NETFPGA_LICENSE_HEADER_START@
@@ -29,8 +29,8 @@
 
 
 extern_data = {
-"reg_dataRW" : {"hdl_template_file": "externs/reg_rw/hdl/EXTERN_reg_dataRW_template.v",
-                "cpp_template_file": "externs/reg_rw/cpp/EXTERN_reg_dataRW_template.hpp",
+"reg_dataRW" : {"hdl_template_file": "externs/reg_dataRW/hdl/EXTERN_reg_dataRW_template.v",
+#                "cpp_template_file": "externs/reg_dataRW/cpp/EXTERN_reg_dataRW_template.hpp",
                 "replacements": {"@EXTERN_NAME@" : "extern_name",
                                  "@MODULE_NAME@" : "module_name",
                                  "@PREFIX_NAME@" : "prefix_name",
@@ -123,5 +123,3 @@ extern_data = {
 }
 
 }
-
-

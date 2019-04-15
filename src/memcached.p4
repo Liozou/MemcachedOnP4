@@ -4,22 +4,22 @@
 #define REG_WRITE 8w1
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(8)
-extern void slab64_reg_rw(in regAddr64 index,
+@Xilinx_ControlWidth(0)
+extern void slab64_reg_dataRW(in regAddr64 index,
                            in bit<96> newVal,
                            in bit<8> opCode,
                            out bit<96> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(7)
-extern void slab128_reg_rw(in regAddr128 index,
+@Xilinx_ControlWidth(0)
+extern void slab128_reg_dataRW(in regAddr128 index,
                            in bit<160> newVal,
                            in bit<8> opCode,
                            out bit<160> result);
 
 @Xilinx_MaxLatency(1)
-@Xilinx_ControlWidth(6)
-extern void slab256_reg_rw(in regAddr256 index,
+@Xilinx_ControlWidth(0)
+extern void slab256_reg_dataRW(in regAddr256 index,
                            in bit<280> newVal,
                            in bit<8> opCode,
                            out bit<280> result);
@@ -53,8 +53,9 @@ control MemcachedControl(inout headers hdr,
     action set_register_address(regAddr_t reg_addr) {
         user_metadata.reg_addr = reg_addr;
     }
+    bit<12> slabID = 0;
     table register_address {
-        key = { hdr.memcached.data_type: exact; }
+        key = { slabID: exact; }
         actions = { set_register_address; }
         size = 64;
     }
@@ -93,11 +94,11 @@ control MemcachedControl(inout headers hdr,
             bit<5> x_value_size_in = user_metadata.value_size[4:0];
             x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
             x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
-            x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
+            x_value_size_in[0:0] = x_value_size_in[0:0] | x_value_size_in[1:1];
             bit<5> x_value_size_out = user_metadata.value_size_out;
             x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
             x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
-            x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
+            x_value_size_out[0:0] = x_value_size_out[0:0] | x_value_size_out[1:1];
 
             user_metadata.value_size_out = user_metadata.value_size[4:0];
             reg_opcode = REG_WRITE;
@@ -109,12 +110,12 @@ control MemcachedControl(inout headers hdr,
                  * value_size_out and value_size have the same highest set bit.
                  */
 
-                if (user_metadata.value_size_out <= 8) { hdr.memcached.data_type = 1; }
-                else if (user_metadata.value_size_out <= 16) { hdr.memcached.data_type = 2; }
-                else { hdr.memcached.data_type = 3; }
+                slabID = 0;
+                if (user_metadata.value_size_out <= 8) { slabID = 1; }
+                else if (user_metadata.value_size_out <= 16) { slabID = 2; }
+                else { slabID = 3; }
 
                 register_address.apply();
-                hdr.memcached.data_type = 0;
                 digest_data.store_new_key = 1;
                 digest_data.remove_this_key = (bit<1>)is_stored_key;
             }
@@ -127,7 +128,7 @@ control MemcachedControl(inout headers hdr,
         }
 
         if (do_reg_operation) {
-            /* slab##n##_reg_rw corresponds to the slab for values of size
+            /* slab##n##_reg_dataRW corresponds to the slab for values of size
              * at most n bits.
              * The last slab has size 248, which corresponds to the maximum
              * size that can be stored by filling headers 8, 16, 32, 64, 128.
@@ -137,11 +138,11 @@ control MemcachedControl(inout headers hdr,
              */
 
             if (user_metadata.value_size_out <= 8) {
-                slab64_reg_rw((regAddr64)user_metadata.reg_addr, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
+                slab64_reg_dataRW((regAddr64)user_metadata.reg_addr, ((bit<64>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[95:0]);
             } else if (user_metadata.value_size_out <= 16) {
-                slab128_reg_rw((regAddr128)user_metadata.reg_addr, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
+                slab128_reg_dataRW((regAddr128)user_metadata.reg_addr, ((bit<128>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value[159:0]);
             } else {
-                slab256_reg_rw((regAddr256)user_metadata.reg_addr, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
+                slab256_reg_dataRW((regAddr256)user_metadata.reg_addr, ((bit<248>)user_metadata.value)++hdr.extras_flags.flags, reg_opcode, user_metadata.value);
             }
 
         }

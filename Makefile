@@ -56,9 +56,15 @@ cpp_test: clean frontend compile_cpp_test run_scripts
 	cp testdata/src.pcap ${SDNET_OUT_DIR}/${P4_SWITCH}/${P4_SWITCH}.TB/Packet.user
 	cp testdata/Tuple_in.txt ${SDNET_OUT_DIR}/${P4_SWITCH}/${P4_SWITCH}.TB/Tuple.user
 
-frontend:
+frontend: update_extern
 	make -C src/
 	make -C testdata/
+
+update_extern:
+	rm ${SUME_FOLDER}/contrib-projects/sume-sdnet-switch/bin/extern_data.py
+	cp ${P4_PROJECT_DIR}/extern_data.py ${SUME_FOLDER}/contrib-projects/sume-sdnet-switch/bin/
+	rm -rf ${SUME_FOLDER}/contrib-projects/sume-sdnet-switch/templates/externs/reg_dataRW/
+	cp -R ${P4_PROJECT_DIR}/reg_dataRW/ ${SUME_FOLDER}/contrib-projects/sume-sdnet-switch/templates/externs/
 
 compile_cpp_test:
 	$(PX) ./src/${P4_PROJECT_NAME}.sdnet $(PX_FLAGS)

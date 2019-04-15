@@ -1,5 +1,5 @@
 //  Xilinx True Dual Port RAM Write First Dual Clock
-//  This code implements a parameterizable true dual port memory (both ports can read and write).
+//  This code implements a parameterizable true single port memory
 //  This implements write-first mode where the data being written to the RAM also resides on
 //  the output port.  If the output data is not needed during writes or the last read value is
 //  desired to be retained, it is suggested to use no change as it is more power efficient.
@@ -7,7 +7,7 @@
 
 `timescale 1 ps / 1 ps
 
-module true_dp_bram
+module true_sp_bram
 #(
     parameter L2_DEPTH = 8,
     parameter WIDTH = 32

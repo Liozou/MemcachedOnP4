@@ -32,11 +32,13 @@
  * File: @MODULE_NAME@.v
  * Author: Stephen Ibanez
  *
- * Auto-generated file.
+ * Modified by Lionel Zoubritzky
  *
- * reg_rw
+ * Hand modified auto-generated file.
  *
- * Atomically read or write a register.
+ * reg_dataRW
+ *
+ * Atomically read or write a register without control plane interface.
  *
  */
 
@@ -46,46 +48,22 @@
 `define READ_OP    8'd0
 `define WRITE_OP   8'd1
 
-`include "@PREFIX_NAME@_cpu_regs_defines.v"
+
 module @MODULE_NAME@
 #(
     parameter INDEX_WIDTH = @INDEX_WIDTH@,
     parameter REG_WIDTH = @REG_WIDTH@,
     parameter OP_WIDTH = 8,
-    parameter INPUT_WIDTH = REG_WIDTH+INDEX_WIDTH+8+1,
-    parameter C_S_AXI_ADDR_WIDTH = @ADDR_WIDTH@,
-    parameter C_S_AXI_DATA_WIDTH = 32
+    parameter INPUT_WIDTH = REG_WIDTH+INDEX_WIDTH+8+1
 )
 (
     // Data Path I/O
     input                                           clk_lookup,
-    input                                           clk_lookup_rst_high,
+    input                                           rst,
     input                                           tuple_in_@EXTERN_NAME@_input_VALID,
     input   [INPUT_WIDTH-1:0]                       tuple_in_@EXTERN_NAME@_input_DATA,
-    output                                         tuple_out_@EXTERN_NAME@_output_VALID,
-    output  [REG_WIDTH-1:0]                        tuple_out_@EXTERN_NAME@_output_DATA,
-
-    // Control Path I/O
-    input                                     clk_control,
-    input                                     clk_control_rst_low,
-    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     control_S_AXI_AWADDR,
-    input                                     control_S_AXI_AWVALID,
-    input      [C_S_AXI_DATA_WIDTH-1 : 0]     control_S_AXI_WDATA,
-    input      [C_S_AXI_DATA_WIDTH/8-1 : 0]   control_S_AXI_WSTRB,
-    input                                     control_S_AXI_WVALID,
-    input                                     control_S_AXI_BREADY,
-    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     control_S_AXI_ARADDR,
-    input                                     control_S_AXI_ARVALID,
-    input                                     control_S_AXI_RREADY,
-    output                                    control_S_AXI_ARREADY,
-    output     [C_S_AXI_DATA_WIDTH-1 : 0]     control_S_AXI_RDATA,
-    output     [1 : 0]                        control_S_AXI_RRESP,
-    output                                    control_S_AXI_RVALID,
-    output                                    control_S_AXI_WREADY,
-    output     [1 :0]                         control_S_AXI_BRESP,
-    output                                    control_S_AXI_BVALID,
-    output                                    control_S_AXI_AWREADY
-
+    output                                          tuple_out_@EXTERN_NAME@_output_VALID,
+    output  [REG_WIDTH-1:0]                         tuple_out_@EXTERN_NAME@_output_DATA
 );
 
 
@@ -114,11 +92,6 @@ module @MODULE_NAME@
     localparam WAIT_BRAM = 1;
     localparam WRITE_RESULT = 2;
 
-    // control plane state machine states
-    localparam WAIT_REQ = 0;
-    localparam WAIT_BRAM_CTRL = 1;
-    localparam WRITE_READ_RESULT = 2;
-
     // data plane state machine signals
     reg [2:0]                     d_state, d_state_next;
     reg [REG_WIDTH-1:0]           result_r, result_r_next;
@@ -133,48 +106,6 @@ module @MODULE_NAME@
     reg  [REG_WIDTH-1:0]     d_data_in_bram;
     wire [REG_WIDTH-1:0]     d_data_out_bram;
 
-    // control signals
-    wire resetn_sync;
-
-
-    //// CPU REGS START ////
-    @PREFIX_NAME@_cpu_regs
-    #(
-        .C_BASE_ADDRESS        (0),
-        .C_S_AXI_DATA_WIDTH    (C_S_AXI_DATA_WIDTH),
-        .C_S_AXI_ADDR_WIDTH    (C_S_AXI_ADDR_WIDTH)
-    ) @PREFIX_NAME@_cpu_regs_inst
-    (
-      // General ports
-       .clk                    ( clk_lookup),
-       .resetn                 (~clk_lookup_rst_high),
-      // AXI Lite ports
-       .S_AXI_ACLK             (clk_control),
-       .S_AXI_ARESETN          (clk_control_rst_low),
-       .S_AXI_AWADDR           (control_S_AXI_AWADDR),
-       .S_AXI_AWVALID          (control_S_AXI_AWVALID),
-       .S_AXI_WDATA            (control_S_AXI_WDATA),
-       .S_AXI_WSTRB            (control_S_AXI_WSTRB),
-       .S_AXI_WVALID           (control_S_AXI_WVALID),
-       .S_AXI_BREADY           (control_S_AXI_BREADY),
-       .S_AXI_ARADDR           (control_S_AXI_ARADDR),
-       .S_AXI_ARVALID          (control_S_AXI_ARVALID),
-       .S_AXI_RREADY           (control_S_AXI_RREADY),
-       .S_AXI_ARREADY          (control_S_AXI_ARREADY),
-       .S_AXI_RDATA            (control_S_AXI_RDATA),
-       .S_AXI_RRESP            (control_S_AXI_RRESP),
-       .S_AXI_RVALID           (control_S_AXI_RVALID),
-       .S_AXI_WREADY           (control_S_AXI_WREADY),
-       .S_AXI_BRESP            (control_S_AXI_BRESP),
-       .S_AXI_BVALID           (control_S_AXI_BVALID),
-       .S_AXI_AWREADY          (control_S_AXI_AWREADY),
-
-      // Global Registers - user can select if to use
-      .cpu_resetn_soft(),//software reset, after cpu module
-      .resetn_soft    (),//software reset to cpu module (from central reset management)
-      .resetn_sync    (resetn_sync)//synchronized reset, use for better timing
-    );
-    //// CPU REGS END ////
 
     //// Input buffer to hold requests ////
     fallthrough_small_fifo
@@ -194,12 +125,12 @@ module @MODULE_NAME@
        .din                            (tuple_in_@EXTERN_NAME@_input_DATA),
        .wr_en                          (tuple_in_@EXTERN_NAME@_input_VALID),
        .rd_en                          (rd_en_fifo),
-       .reset                          (~resetn_sync),
+       .reset                          (rst),
        .clk                            (clk_lookup)
     );
 
     //// BRAM to hold state ////
-    true_dp_bram
+    true_sp_bram
     #(
         .L2_DEPTH(INDEX_WIDTH),
         .WIDTH(REG_WIDTH)
@@ -211,7 +142,7 @@ module @MODULE_NAME@
         .en2               (d_en_bram),
         .addr2             (d_addr_in_bram),
         .din2              (d_data_in_bram),
-        .rst2              (~resetn_sync),
+        .rst2              (rst),
         .regce2            (d_en_bram),
         .dout2             (d_data_out_bram)
     );
@@ -288,7 +219,7 @@ module @MODULE_NAME@
    assign tuple_out_@EXTERN_NAME@_output_DATA  = result_out;
 
    always @(posedge clk_lookup) begin
-      if(~resetn_sync) begin
+      if(rst) begin
          d_state <= START_REQ;
          d_addr_in_bram_r <= 0;
          result_r <= 0;
