@@ -177,7 +177,6 @@ control MemcachedControl(inout headers hdr,
                     // No need to update the checksum because of the way it is computed.
                 } else {
                     hdr.memcached.opcode = 0x0c; // GETK
-                    digest_data.was_get_miss = 1;
                 }
             }
 
@@ -192,8 +191,6 @@ control MemcachedControl(inout headers hdr,
         digest_data.key = user_metadata.key;
         digest_data.value_size_out = user_metadata.value_size_out;
         digest_data.reg_addr = user_metadata.reg_addr;
-        digest_data.was_stored_key = (bit<1>)is_stored_key;
-        digest_data.did_reg_operation = (bit<1>)do_reg_operation;
 
         hdr.udp.checksum = 0;
     }
