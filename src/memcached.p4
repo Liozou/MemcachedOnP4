@@ -194,6 +194,8 @@ control MemcachedControl(inout headers hdr,
         digest_data.reg_addr = user_metadata.reg_addr;
         digest_data.was_stored_key = (bit<1>)is_stored_key;
         digest_data.did_reg_operation = (bit<1>)do_reg_operation;
+
+        hdr.udp.checksum = 0;
     }
 
 }

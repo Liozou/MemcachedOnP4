@@ -286,7 +286,7 @@ for i in range(20):
 
     if isMemcached:
         memcachedPkt, key, value = make_memcached_pkt("NOOP", random.randint(1,7), random.randint(1,15))
-        pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211) / memcachedPkt
+        pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211, chksum=0) / memcachedPkt
     else:
         key = 0; value = 0
         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / TCP()
