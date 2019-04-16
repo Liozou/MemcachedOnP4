@@ -152,7 +152,7 @@ def inverse_hex_from_int(n):
 class Memcached(Packet):
     name = "MemcachedPacket "
     fields_desc=[ByteEnumField("magic",128, {128:"Request", 129:"Response"}),
-                 ByteEnumField("opcode",0, {0:"GET",1:"SET",4:"DELETE",12:"GETK"}),
+                 ByteEnumField("opcode",0, {0:"GET",1:"SET",4:"DELETE",12:"GETK",10:"NOOP"}),
                  ShortField("key_length",8),
                  ByteField("extras_length",0),
                  ByteField("data_type",0),
@@ -211,7 +211,7 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
         int_key = int_from_string(key);
         fuzz = int('aaaa', 16)
         magic = int('80', 16)
-        opcode = int('0c',16)
+        opcode = int('0a',16)
         sss_sdnet_tuples.dig_tuple_expect['key'] = int_from_string(key)
     else:
         print "Non-M Packet"
@@ -285,7 +285,7 @@ for i in range(20):
         dst_MAC = ETH_UNKNOWN[dst_ind]
 
     if isMemcached:
-        memcachedPkt, key, value = make_memcached_pkt("GETK", random.randint(1,7), random.randint(1,15))
+        memcachedPkt, key, value = make_memcached_pkt("NOOP", random.randint(1,7), random.randint(1,15))
         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211) / memcachedPkt
     else:
         key = 0; value = 0

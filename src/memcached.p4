@@ -176,6 +176,7 @@ control MemcachedControl(inout headers hdr,
 
                 } else {
                     hdr.memcached.opcode = 0x0c; // GETK
+                    digest_data.was_get_miss = 1;
                 }
             }
 
@@ -190,6 +191,8 @@ control MemcachedControl(inout headers hdr,
         digest_data.key = user_metadata.key;
         digest_data.value_size_out = user_metadata.value_size_out;
         digest_data.reg_addr = user_metadata.reg_addr;
+
+        digest_data.was_stored_key = (bit<1>)is_stored_key;
 
     }
 
