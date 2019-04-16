@@ -168,10 +168,13 @@ control MemcachedControl(inout headers hdr,
                     hdr.memcached.magic = 0x81; // Returning a response packet
                     hdr.memcached.vbucket_id = 0; // No error
                     sume_metadata.dst_port = sume_metadata.src_port;
-                    bit<48> tmp = hdr.ethernet.dstAddr;
+                    bit<48> tmpEth = hdr.ethernet.dstAddr;
                     hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
-                    hdr.ethernet.srcAddr = tmp;
-
+                    hdr.ethernet.srcAddr = tmpEth;
+                    bit<32> tmpIP = hdr.ipv4.dstAddr;
+                    hdr.ipv4.dstAddr = hdr.ipv4.srcAddr;
+                    hdr.ipv4.srcAddr = tmpIP;
+                    // No need to update the checksum because of the way it is computed.
                 } else {
                     hdr.memcached.opcode = 0x0c; // GETK
                     digest_data.was_get_miss = 1;

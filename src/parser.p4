@@ -60,6 +60,7 @@ parser TopParser(packet_in buffer,
         digest_data.value_size_out = 0;
         digest_data.reg_addr = 0;
         digest_data.reserved_flags = 0;
+        digest_data.invalid_checksum = 0;
         digest_data.was_get_miss = 0;
         digest_data.did_reg_operation = 0;
         digest_data.was_stored_key = 0;
