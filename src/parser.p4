@@ -61,6 +61,7 @@ parser TopParser(packet_in buffer,
         digest_data.reg_addr = 0;
         digest_data.reserved_flags = 0;
         digest_data.was_get_miss = 0;
+        digest_data.did_reg_operation = 0;
         digest_data.was_stored_key = 0;
         digest_data.save_src_port = 0;
         digest_data.store_new_key = 0;
