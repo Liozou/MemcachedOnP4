@@ -95,17 +95,12 @@ control TopPipe(inout headers hdr,
             MemcachedControl.apply(hdr, user_metadata, digest_data, sume_metadata);
         }
 
-        // if (hdr.ipv4.isValid()) {
-        //     bit<16> checksum = hdr.ipv4.hdrChecksum;
-        //     bit<16> result = 0;
-        //     hdr.ipv4.hdrChecksum = 0;
-        //     compute_ip_chksum(hdr.ipv4.version, hdr.ipv4.ihl, hdr.ipv4.diffserv, hdr.ipv4.totalLen, hdr.ipv4.identification, hdr.ipv4.flags, hdr.ipv4.fragOffset, hdr.ipv4.ttl, hdr.ipv4.protocol, hdr.ipv4.hdrChecksum, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, result);
-        //     if (result != checksum) {
-        //         sume_metadata.dst_port = 0;
-        //         digest_data.invalid_checksum = 1;
-        //     }
-        //     hdr.ipv4.hdrChecksum = result;
-        // }
+        if (hdr.ipv4.isValid()) {
+            bit<16> result = 0;
+            hdr.ipv4.hdrChecksum = 0;
+            compute_ip_chksum(hdr.ipv4.version, hdr.ipv4.ihl, hdr.ipv4.diffserv, hdr.ipv4.totalLen, hdr.ipv4.identification, hdr.ipv4.flags, hdr.ipv4.fragOffset, hdr.ipv4.ttl, hdr.ipv4.protocol, hdr.ipv4.hdrChecksum, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, result);
+            hdr.ipv4.hdrChecksum = result;
+        }
     }
 }
 
