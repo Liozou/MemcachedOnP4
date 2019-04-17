@@ -33,22 +33,44 @@
 //
 
 
-#include "types.p4"
 
 // Parser Implementation
-@Xilinx_MaxPacketRegion(16384)
-parser TopParser(packet_in b,
-                 out headers p,
+// @Xilinx_MaxPacketRegion(16384)
+parser TopParser(packet_in buffer,
+                 out headers hdr,
                  out user_metadata_t user_metadata,
                  out digest_data_t digest_data,
                  inout sume_metadata_t sume_metadata) {
 
     state start {
-        buffer.extract(hdr.ethernet);
-        user_metadata.unused = 0;
-        digest_data.src_port = 0;
-        digest_data.eth_src_addr = 0;
+        user_metadata.value_size = 0;
+        user_metadata.isRequest = false;
+        user_metadata.value_size_out = 0;
+        user_metadata.reg_addr = 0;
+        user_metadata.key = 0;
+        user_metadata.value = 0;
+
+        digest_data.fuzz = 0xbbbb;
+        digest_data.magic = 0;
+        digest_data.opcode = 0;
         digest_data.unused = 0;
+        digest_data.key = 0;
+        digest_data.expiration = 0;
+        digest_data.padding = 0;
+        digest_data.value_size_out = 0;
+        digest_data.reg_addr = 0;
+        digest_data.reserved_flags = 0;
+        digest_data.invalid_checksum = 0;
+        digest_data.was_get_miss = 0;
+        digest_data.did_reg_operation = 0;
+        digest_data.was_stored_key = 0;
+        digest_data.save_src_port = 0;
+        digest_data.store_new_key = 0;
+        digest_data.remove_this_key = 0;
+        digest_data.eth_src_addr = 0;
+        digest_data.src_port = 0;
+
+        buffer.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             0x0800: parse_ipv4;
             default: accept;
@@ -57,7 +79,13 @@ parser TopParser(packet_in b,
 
     state parse_ipv4 {
         buffer.extract(hdr.ipv4);
-        verify(hdr.ipv4.ihl == 5, error.UnhandledIPv4Options);
+        transition select(hdr.ipv4.ihl) {
+            5: parse_protocol;
+            default: reject; // Unhandled IPv4 options
+        }
+    }
+
+    state parse_protocol {
         transition select(hdr.ipv4.protocol) {
             17: parse_udp;
             default: accept;
@@ -74,30 +102,29 @@ parser TopParser(packet_in b,
 
     state parse_memcached {
         buffer.extract(hdr.memcached);
+        user_metadata.value_size = (bit<32>)(hdr.memcached.total_body - ((bit<32>)(hdr.memcached.key_length)) - ((bit<32>)hdr.memcached.extras_length));
+        user_metadata.isRequest = (hdr.memcached.magic == 0x80);
         transition select(hdr.memcached.extras_length) {
-            0:  parse_key;
-            32: parse_extras_32
-            64: parse_extras_64
+            0: PARSE_KEY_TOP;
+            4: parse_extras_32;
+            8: parse_extras_64;
             default: reject;
         }
     }
 
     state parse_extras_32 {
-        buffer.extract(hdr.extras.extras_32);
-        transition parse_key;
+        buffer.extract(hdr.extras_flags);
+        transition PARSE_KEY_TOP;
     }
     state parse_extras_64 {
-        buffer.extract(hdr.extras.extras_64);
-        transition parse_key;
+        buffer.extract(hdr.extras_flags);
+        buffer.extract(hdr.extras_expiration);
+        digest_data.expiration = hdr.extras_expiration.expiration;
+        transition PARSE_KEY_TOP;
     }
 
-    state parse_key {
-        buffer.extract(hdr.key, (bit<32>)hdr.memcached.key_length);
-        transition parse_value;
-    }
+    PARSE_KEY
 
-    state parse_value {
-        buffer.extract(hdr.value, (bit<32>)(hdr.memcached.total_length - 192 - hdr.memcached.key_length - hdr.memcached.extras_length));
-        transition accept;
-    }
+    PARSE_VALUE
+
 }
