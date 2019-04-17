@@ -70,18 +70,18 @@ control MemcachedControl(inout headers hdr,
 
         bool is_stored_key = memcached_keyvalue.apply().hit;
 
-        if (user_metadata.isRequest && hdr.memcached.CAS != 0) {
-            // Unsupported operation, but the server should answer it.
-            // This makes the control place remove the key from the table.
-            sume_metadata.send_dig_to_cpu = 1;
-            digest_data.magic = hdr.memcached.magic;
-            digest_data.opcode = 8w0xff; // Invalid opcode (to prevent triggering any undesired behaviour from the control plane)
-            digest_data.key = user_metadata.key;
-            digest_data.value_size_out = user_metadata.value_size[4:0];
-            digest_data.reg_addr = user_metadata.reg_addr;
-            digest_data.remove_this_key = (bit<1>)is_stored_key;
-            return;
-        }
+        // if (user_metadata.isRequest && hdr.memcached.CAS != 0) {
+        //     // Unsupported operation, but the server should answer it.
+        //     // This makes the control place remove the key from the table.
+        //     sume_metadata.send_dig_to_cpu = 1;
+        //     digest_data.magic = hdr.memcached.magic;
+        //     digest_data.opcode = 8w0xff; // Invalid opcode (to prevent triggering any undesired behaviour from the control plane)
+        //     digest_data.key = user_metadata.key;
+        //     digest_data.value_size_out = user_metadata.value_size[4:0];
+        //     digest_data.reg_addr = user_metadata.reg_addr;
+        //     digest_data.remove_this_key = (bit<1>)is_stored_key;
+        //     return;
+        // }
 
 
         bool do_reg_operation = (OP_IS_GET || OP_IS_GETK) && is_stored_key;
@@ -174,7 +174,7 @@ control MemcachedControl(inout headers hdr,
                     bit<32> tmpIP = hdr.ipv4.dstAddr;
                     hdr.ipv4.dstAddr = hdr.ipv4.srcAddr;
                     hdr.ipv4.srcAddr = tmpIP;
-                    // No need to update the checksum because of the way it is computed.
+                    hdr.ipv4.ttl = 0x40; // Creating a new packet so setting up a new TTL.
                 } else {
                     hdr.memcached.opcode = 0x0c; // GETK
                     digest_data.was_get_miss = 1;
@@ -193,9 +193,8 @@ control MemcachedControl(inout headers hdr,
         digest_data.value_size_out = user_metadata.value_size_out;
         digest_data.reg_addr = user_metadata.reg_addr;
         digest_data.was_stored_key = (bit<1>)is_stored_key;
-        digest_data.did_reg_operation = (bit<1>)do_reg_operation;
 
-        hdr.udp.checksum = 0;
+        hdr.udp.checksum = 0; // We do not support udp checksum computation.
     }
 
 }

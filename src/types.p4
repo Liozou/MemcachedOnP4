@@ -92,10 +92,8 @@ struct digest_data_t {
     bit<3> padding;
     bit<5> value_size_out;
     bit<8> reg_addr;
-    bit<33> reserved_flags;
-    bit<1> invalid_checksum;
+    bit<35> reserved_flags;
     bit<1> was_get_miss;
-    bit<1> did_reg_operation;
     bit<1> was_stored_key;
     bit<1> save_src_port;
     bit<1> store_new_key;
