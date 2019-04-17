@@ -174,7 +174,7 @@ control MemcachedControl(inout headers hdr,
                     bit<32> tmpIP = hdr.ipv4.dstAddr;
                     hdr.ipv4.dstAddr = hdr.ipv4.srcAddr;
                     hdr.ipv4.srcAddr = tmpIP;
-                    // No need to update the checksum because of the way it is computed.
+                    hdr.ipv4.ttl = 0x40; // Creating a new packet so setting up a new TTL.
                 } else {
                     hdr.memcached.opcode = 0x0c; // GETK
                 }
@@ -192,7 +192,7 @@ control MemcachedControl(inout headers hdr,
         digest_data.value_size_out = user_metadata.value_size_out;
         digest_data.reg_addr = user_metadata.reg_addr;
 
-        hdr.udp.checksum = 0;
+        hdr.udp.checksum = 0; // We do not support udp checksum computation.
     }
 
 }

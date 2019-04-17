@@ -7,6 +7,22 @@
 
 @Xilinx_MaxLatency(3)
 @Xilinx_ControlWidth(0)
+extern void ck_ip_chksum(in bit<4> version,
+                         in bit<4> ihl,
+                         in bit<8> tos,
+                         in bit<16> totalLen,
+                         in bit<16> identification,
+                         in bit<3> flags,
+                         in bit<13> fragOffset,
+                         in bit<8> ttl,
+                         in bit<8> protocol,
+                         in bit<16> hdrChecksum,
+                         in bit<32> srcAddr,
+                         in bit<32> dstAddr,
+                         out bit<16> result);
+
+@Xilinx_MaxLatency(3)
+@Xilinx_ControlWidth(0)
 extern void compute_ip_chksum(in bit<4> version,
                          in bit<4> ihl,
                          in bit<8> tos,
@@ -45,21 +61,6 @@ control TopPipe(inout headers hdr,
         default_action = NoAction;
     }
 
-    action set_broadcast(port_t port) {
-        sume_metadata.dst_port = port;
-    }
-
-    table broadcast {
-        key = { sume_metadata.src_port: exact; }
-
-        actions = {
-            set_broadcast;
-            NoAction;
-        }
-        size = 64;
-        default_action = NoAction;
-    }
-
     table smac {
         key = { hdr.ethernet.srcAddr: exact; }
 
@@ -79,10 +80,21 @@ control TopPipe(inout headers hdr,
 
     apply {
 
+        if (hdr.ipv4.isValid()) {
+            bit<16> result = 0;
+            bit<16> IPchecksum = hdr.ipv4.hdrChecksum;
+            hdr.ipv4.hdrChecksum = 0;
+            ck_ip_chksum(hdr.ipv4.version, hdr.ipv4.ihl, hdr.ipv4.diffserv, hdr.ipv4.totalLen, hdr.ipv4.identification, hdr.ipv4.flags, hdr.ipv4.fragOffset, hdr.ipv4.ttl, hdr.ipv4.protocol, hdr.ipv4.hdrChecksum, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, result);
+            if (result != IPchecksum) { // Invalid checksum -> drop the packet
+                sume_metadata.dst_port = 0;
+                return;
+            }
+        }
+
         // try to forward based on destination Ethernet address
         if (!forward.apply().hit) {
             // miss in forwarding table
-            broadcast.apply();
+            sume_metadata.dst_port = 8w0b01010101 & (~sume_metadata.src_port);
         }
 
         // check if src Ethernet address is in the forwarding database
@@ -97,7 +109,7 @@ control TopPipe(inout headers hdr,
 
         if (hdr.ipv4.isValid()) {
             bit<16> result = 0;
-            hdr.ipv4.hdrChecksum = 0;
+            // At this point, hdr.ipv4.hdrChecksum is still set to 0.
             compute_ip_chksum(hdr.ipv4.version, hdr.ipv4.ihl, hdr.ipv4.diffserv, hdr.ipv4.totalLen, hdr.ipv4.identification, hdr.ipv4.flags, hdr.ipv4.fragOffset, hdr.ipv4.ttl, hdr.ipv4.protocol, hdr.ipv4.hdrChecksum, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, result);
             hdr.ipv4.hdrChecksum = result;
         }
