@@ -35,9 +35,9 @@ control MemcachedControl(inout headers hdr,
      * The values are not directly stored in the tables because of their size.
      */
 
-    action set_stored_info(bit<13> info) {
-        user_metadata.reg_addr = info[7:0];
-        user_metadata.value_size_out = info[12:8];
+    action set_stored_info(regAddr_t reg_addr, bit<5> value_size) {
+        user_metadata.reg_addr = reg_addr;
+        user_metadata.value_size_out = value_size;
     }
     table memcached_keyvalue {
         key = { user_metadata.key: exact; }

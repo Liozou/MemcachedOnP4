@@ -2,10 +2,10 @@
 // Copyright (c) 2017 Stephen Ibanez
 // All rights reserved.
 //
-// This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+// This software was developed by Stanford University and the University of Cambridge Computer Laboratory
 // under National Science Foundation under Grant No. CNS-0855268,
 // the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-// by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+// by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 // as part of the DARPA MRC research programme.
 //
 // @NETFPGA_LICENSE_HEADER_START@
@@ -38,13 +38,13 @@ table_cam_add_entry broadcast set_broadcast 0b00000100 => 0b01010001
 table_cam_add_entry broadcast set_broadcast 0b00010000 => 0b01000101
 table_cam_add_entry broadcast set_broadcast 0b01000000 => 0b00010101
 
-table_cam_add_entry smac NoAction 08:11:11:11:11:08 => 
-table_cam_add_entry smac NoAction 08:22:22:22:22:08 => 
-table_cam_add_entry smac NoAction 08:33:33:33:33:08 => 
-table_cam_add_entry smac NoAction 08:44:44:44:44:08 => 
-table_cam_add_entry smac NoAction ff:ff:ff:ff:ff:ff => 
+table_cam_add_entry smac NoAction 08:11:11:11:11:08 =>
+table_cam_add_entry smac NoAction 08:22:22:22:22:08 =>
+table_cam_add_entry smac NoAction 08:33:33:33:33:08 =>
+table_cam_add_entry smac NoAction 08:44:44:44:44:08 =>
+table_cam_add_entry smac NoAction ff:ff:ff:ff:ff:ff =>
 
 // Set key "__test1" (= 26845076310422577) to value of size 7 (= 0x07) stored at register 42 (= 0x2a)
-table_cam_add_entry MemcachedControl_memcached_keyvalue_0 MemcachedControl.set_stored_info 26845076310422577 => 0x072a
+table_cam_add_entry MemcachedControl_memcached_keyvalue_0 MemcachedControl.set_stored_info 26845076310422577 => 42 7
 // Set key "__test2" (= 26845076310422578) to value of size 31 (= 0x1f) stored at register 43 (= 0x2b)
-table_cam_add_entry MemcachedControl_memcached_keyvalue_0 MemcachedControl.set_stored_info 26845076310422578 => 0x1f2b
+table_cam_add_entry MemcachedControl_memcached_keyvalue_0 MemcachedControl.set_stored_info 26845076310422578 => 43 31
