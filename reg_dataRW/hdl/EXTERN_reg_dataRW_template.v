@@ -108,7 +108,7 @@ module @MODULE_NAME@
 
 
     //// Input buffer to hold requests ////
-    fallthrough_small_fifo
+    fallthrough_small_fifo_regdataRW
     #(
         .WIDTH(INPUT_WIDTH),
         .MAX_DEPTH_BITS(L2_REQ_BUF_DEPTH)

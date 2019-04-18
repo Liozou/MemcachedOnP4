@@ -43,3 +43,8 @@ table_cam_add_entry smac NoAction 08:22:22:22:22:08 =>
 table_cam_add_entry smac NoAction 08:33:33:33:33:08 => 
 table_cam_add_entry smac NoAction 08:44:44:44:44:08 => 
 table_cam_add_entry smac NoAction ff:ff:ff:ff:ff:ff => 
+
+// Set key "__test1" (= 26845076310422577) to value of size 7 (= 0x07) stored at register 42 (= 0x2a)
+table_cam_add_entry MemcachedControl_memcached_keyvalue_0 MemcachedControl.set_stored_info 26845076310422577 => 0x072a
+// Set key "__test2" (= 26845076310422578) to value of size 31 (= 0x1f) stored at register 43 (= 0x2b)
+table_cam_add_entry MemcachedControl_memcached_keyvalue_0 MemcachedControl.set_stored_info 26845076310422578 => 0x1f2b

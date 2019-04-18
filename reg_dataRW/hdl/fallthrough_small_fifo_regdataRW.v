@@ -6,7 +6,7 @@
 // Stanford University and the University of Cambridge Computer Laboratory
 // under National Science Foundation under Grant No. CNS-0855268,
 // the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-// by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+// by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 // as part of the DARPA MRC research programme.
 //
 // @NETFPGA_LICENSE_HEADER_START@
@@ -43,7 +43,7 @@
 
 `timescale 1 ps / 1 ps
 
-module fallthrough_small_fifo
+module fallthrough_small_fifo_regdataRW
     #(parameter WIDTH = 72,
       parameter MAX_DEPTH_BITS = 3,
       parameter PROG_FULL_THRESHOLD = 2**MAX_DEPTH_BITS - 1)
@@ -72,7 +72,7 @@ module fallthrough_small_fifo
    wire                  will_update_middle, will_update_dout;
 
    // orig_fifo is just a normal (non-FWFT) synchronous or asynchronous FIFO
-   small_fifo
+   small_fifo_regdataRW
      #(.WIDTH (WIDTH),
        .MAX_DEPTH_BITS (MAX_DEPTH_BITS),
        .PROG_FULL_THRESHOLD (PROG_FULL_THRESHOLD))
@@ -107,24 +107,24 @@ module fallthrough_small_fifo
          begin
             if (will_update_middle)
                middle_dout <= fifo_dout;
-            
+
             if (will_update_dout)
                dout <= middle_valid ? middle_dout : fifo_dout;
-            
+
             if (fifo_rd_en)
                fifo_valid <= 1;
             else if (will_update_middle || will_update_dout)
                fifo_valid <= 0;
-            
+
             if (will_update_middle)
                middle_valid <= 1;
             else if (will_update_dout)
                middle_valid <= 0;
-            
+
             if (will_update_dout)
                dout_valid <= 1;
             else if (rd_en)
                dout_valid <= 0;
-         end 
+         end
      end
 endmodule

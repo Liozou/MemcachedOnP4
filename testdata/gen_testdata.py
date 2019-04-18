@@ -140,7 +140,7 @@ def compute_simple_hash(obj, max_length=64):
 def test_hash(n):
     return compute_simple_hash(generate_obj(bits_from_int(n, 1+int(log(max(n,1),2)))))
 
-def inverse_hex_from_int(n):
+def reverse_endianness(n):
     x = hex(n)[2:]
     if len(x)%2==1:
         x = "0" + x
@@ -148,6 +148,15 @@ def inverse_hex_from_int(n):
     for i in range(len(x)/2):
         l = x[2*i] + x[2*i+1] + l
     return int(l,16)
+
+def string_from_int(n):
+    s = ""
+    l = hex(n)[2:]
+    if len(l)%2:
+        l = '0' + l
+    for i in range(len(l)/2):
+        s += chr(int(l[2*i:2*i+2], 16))
+    return s
 
 class Memcached(Packet):
     name = "MemcachedPacket "
@@ -161,14 +170,19 @@ class Memcached(Packet):
                  IntField("opaque",0),
                  LongField("cas",0)]
 
-def make_memcached_hdr(op, keylen, valuelen):
+
+def make_memcached_hdr(keylen, valuelen, op, magic="Request", **kwargs):
     hdr = Memcached()
     hdr[Memcached].opcode = op
     hdr[Memcached].key_length = keylen
     hdr[Memcached].total_length = keylen + valuelen
+    hdr[Memcached].magic = magic
     if op=="SET":
         hdr[Memcached].total_length += 8 # for the extras
         hdr[Memcached].extras_length = 8
+    elif op=="GET" and magic=="Response":
+        hdr[Memcached].total_length += 4 # for the extras
+        hdr[Memcached].extras_length = 4
     return hdr
 
 def generate_load(length):
@@ -177,11 +191,28 @@ def generate_load(length):
         load += chr(random.randint(0,255))
     return load
 
-def make_memcached_pkt(op, keylen, valuelen): # keylen and valuelen are expressed in bytes
-    key = generate_load(keylen)
-    value = generate_load(valuelen)
-    pkt = make_memcached_hdr(op, keylen, valuelen) / (key + value)
-    return pkt, key, value
+def make_extras(op, magic="Request", flags_extra="", expiration=0, **kwargs):
+    if (op=="GET" or op=="GETK") and magic=="Request":
+        return ""
+    if (op=="GET" or op=="GETK") and magic=="Response":
+        return flags_extra
+    if op=="SET":
+        s = string_from_int(expiration)
+        s = s + ('\x00'*(4 - len(s)))
+        return flags_extra + s
+
+def make_memcached_pkt(src_MAC, dst_MAC, src_IP, dst_IP, key="", value="", **kwargs):
+    pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=src_IP, dst=dst_IP) / UDP(dport=11211, chksum=0)
+    pkt = pkt / make_memcached_hdr(len(key), len(value), **kwargs) / make_extras(**kwargs) / (key + value)
+    # print("SIZE OF PKT = ", len(pkt))
+    pkt = pkt / ('\x00'*(128 - len(pkt)))
+    return pkt
+
+def make_random_pkt(src_MAC, dst_MAC, src_IP, dst_IP):
+    pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=src_IP, dst=dst_IP) / UDP(dport=11212)
+    # print("SIZE OF PKT = ", len(pkt))
+    pkt = pkt / ('\x00'*(160 - len(pkt)))
+    return pkt
 
 
 
@@ -194,13 +225,16 @@ def applyPkt(pkt, src_ind):
     nf_applied[src_ind].append(pkt)
     pkt_num += 1
 
-def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value):
+def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, flags=0, reg_addr=0, value_size_out=0, expiration=0, key="", opcode=0, magic=0, return_to_sender=False):
     pktsExpected.append(pkt)
-    # If dst MAC address is unknown, broadcast with src port pruning
-    if dst_known:
+
+    if return_to_sender:
+        sss_sdnet_tuples.sume_tuple_expect['dst_port'] = portMap[src_ind];
+        nf_expected[src_ind].append(pkt)
+    elif dst_known:
         sss_sdnet_tuples.sume_tuple_expect['dst_port'] = portMap[dst_ind]
         nf_expected[dst_ind].append(pkt)
-    else:
+    else: # If dst MAC address is unknown, broadcast with src port pruning
         sss_sdnet_tuples.sume_tuple_expect['dst_port'] = bcast_portMap[src_ind]
         for ind in [0,1,2,3]:
             if ind != src_ind:
@@ -210,33 +244,38 @@ def expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
         print "Memcached Packet with key = ", hex(int_from_string(key))
         int_key = int_from_string(key);
         fuzz = int('aaaa', 16)
-        magic = int('80', 16)
-        opcode = int('0a',16)
         sss_sdnet_tuples.dig_tuple_expect['key'] = int_from_string(key)
     else:
         print "Non-M Packet"
-        int_key = 0; magic = 0; opcode = 0
+        int_key = 0;
         fuzz = int('bbbb', 16)
         sss_sdnet_tuples.dig_tuple_expect['key'] = 0
 
     # If src MAC address is unknown, send over DMA
     if not src_known:
         src_port = portMap[src_ind]
-        eth_src_addr = int(pkt[Ether].src.replace(':',''),16)
-        flags = 4
+        if return_to_sender:
+            eth_src_addr = int(pkt[Ether].dst.replace(':',''),16)
+        else:
+            eth_src_addr = int(pkt[Ether].src.replace(':',''),16)
+        flags |= 4
     else:
-        src_port = 0; eth_src_addr = 0; flags = 0
+        src_port = 0; eth_src_addr = 0
 
     sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 0
     sss_sdnet_tuples.dig_tuple_expect['src_port'] = src_port
     sss_sdnet_tuples.dig_tuple_expect['eth_src_addr'] = eth_src_addr
-    sss_sdnet_tuples.dig_tuple_expect['magic'] = magic
-    sss_sdnet_tuples.dig_tuple_expect['opcode'] = opcode
-    sss_sdnet_tuples.dig_tuple_expect['fuzz'] = fuzz
     sss_sdnet_tuples.dig_tuple_expect['flags'] = flags
+    sss_sdnet_tuples.dig_tuple_expect['reg_addr'] = reg_addr
+    sss_sdnet_tuples.dig_tuple_expect['value_size_out'] = value_size_out
+    sss_sdnet_tuples.dig_tuple_expect['expiration'] = expiration
+    sss_sdnet_tuples.dig_tuple_expect['key'] = int_key
+    sss_sdnet_tuples.dig_tuple_expect['opcode'] = opcode
+    sss_sdnet_tuples.dig_tuple_expect['magic'] = magic
+    sss_sdnet_tuples.dig_tuple_expect['fuzz'] = fuzz
 
     if isMemcached or not src_known:
-        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, fuzz=inverse_hex_from_int(fuzz), key=int_key, magic=magic, opcode=opcode, flags=flags)
+        digest_pkt = Digest_data(src_port=src_port, eth_src_addr=eth_src_addr, flags=flags, reg_addr=reg_addr, value_size_out=value_size_out, expiration=reverse_endianness(expiration), key=int_key, opcode=opcode, magic=magic, fuzz=reverse_endianness(fuzz))
         dma0_expected.append(digest_pkt)
         sss_sdnet_tuples.sume_tuple_expect['send_dig_to_cpu'] = 1
 
@@ -265,12 +304,40 @@ def write_pcap_files():
 src_pkts = []
 dst_pkts = []
 # create some packets that are known and some that are unknown
-for i in range(20):
+# for i in range(20):
+#     src_known = bool(random.getrandbits(1))
+#     dst_known = bool(random.getrandbits(1))
+#     src_ind = random.randint(0,3)
+#     dst_ind = random.randint(0,3)
+#     isMemcached = bool(random.getrandbits(1))
+#
+#     # pick src MAC
+#     if src_known:
+#         src_MAC = ETH_KNOWN[src_ind]
+#     else:
+#         src_MAC = ETH_UNKNOWN[src_ind]
+#
+#     # pick dst MAC
+#     if dst_known:
+#         dst_MAC = ETH_KNOWN[dst_ind]
+#     else:
+#         dst_MAC = ETH_UNKNOWN[dst_ind]
+#
+#     if isMemcached:
+#         memcachedPkt, key, value = make_memcached_pkt("NOOP", random.randint(1,7), random.randint(1,15))
+#         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211, chksum=0) / memcachedPkt
+#     else:
+#         key = 0; value = 0
+#         pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / TCP()
+#     pkt = pad_pkt(pkt, 64)
+#     applyPkt(pkt, src_ind)
+#     expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
+
+def prepare_addr():
     src_known = bool(random.getrandbits(1))
     dst_known = bool(random.getrandbits(1))
     src_ind = random.randint(0,3)
     dst_ind = random.randint(0,3)
-    isMemcached = bool(random.getrandbits(1))
 
     # pick src MAC
     if src_known:
@@ -284,14 +351,54 @@ for i in range(20):
     else:
         dst_MAC = ETH_UNKNOWN[dst_ind]
 
-    if isMemcached:
-        memcachedPkt, key, value = make_memcached_pkt("NOOP", random.randint(1,7), random.randint(1,15))
-        pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / UDP(dport=11211, chksum=0) / memcachedPkt
-    else:
-        key = 0; value = 0
-        pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=IPv4_ADDR[src_ind], dst=IPv4_ADDR[dst_ind]) / TCP()
-    pkt = pad_pkt(pkt, 64)
+    return src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC
+
+for i in range(10):
+    src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
+    pkt_random = make_random_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind])
+    pkt = pad_pkt(pkt_random, 128)
     applyPkt(pkt, src_ind)
-    expPkt(pkt, src_ind, dst_ind, src_known, dst_known, isMemcached, key, value)
+    expPkt(pkt, src_ind, dst_ind, src_known, dst_known, False)
+
+src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
+pkt_get_fail = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
+                         op="GET", key="__fail")
+applyPkt(pad_pkt(pkt_get_fail, 128), src_ind)
+pkt_getk = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
+                         op="GETK", key="__fail")
+expPkt(pad_pkt(pkt_getk, 128), src_ind, dst_ind, src_known, dst_known, True, flags=0b000, reg_addr=0, value_size_out=0, expiration=0, key="__fail", opcode=0x00, magic=0x80)
+
+
+src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
+pkt_set1 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
+                         op="SET", key="__test1", value="goodbye", flags_extra="kill", expiration=0)
+applyPkt(pad_pkt(pkt_set1, 128), src_ind)
+expPkt(pad_pkt(pkt_set1, 128), src_ind, dst_ind, src_known, dst_known, True, flags=0b000, reg_addr=42, value_size_out=7, expiration=0, key="__test1", opcode=0x01, magic=0x80)
+
+# src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
+# pkt_get1 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
+#                          op="GET", key="__test1")
+# applyPkt(pad_pkt(pkt_get1, 128), src_ind)
+# # For responses, src and dst are exchanged.
+# pkt_resp1 = make_memcached_pkt(src_MAC=dst_MAC, dst_MAC=src_MAC, src_IP=IPv4_ADDR[dst_ind], dst_IP=IPv4_ADDR[src_ind],
+#                          op="GET", value="goodbye", magic="Response", flags_extra="kill")
+# expPkt(pad_pkt(pkt_resp1, 128), src_ind, dst_ind, src_known, dst_known, True, flags=0b000, reg_addr=42, value_size_out=7, expiration=0, key="__test1", opcode=0x00, magic=0x80, return_to_sender=True)
+
+
+
+src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
+pkt_set2 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
+                         op="SET", key="__test2", value="0123456789abcdefghijklmnopqrstu", flags_extra="->?!", expiration=0)
+applyPkt(pad_pkt(pkt_set2, 128), src_ind)
+expPkt(pad_pkt(pkt_set2, 128), src_ind, dst_ind, src_known, dst_known, True, flags=0b000, reg_addr=43, value_size_out=31, expiration=0, key="__test2", opcode=0x01, magic=0x80)
+
+# src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
+# pkt_get2 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
+#                          op="GET", key="__test2")
+# applyPkt(pad_pkt(pkt_get2, 128), src_ind)
+# pkt_resp2 = make_memcached_pkt(src_MAC=dst_MAC, dst_MAC=src_MAC, src_IP=IPv4_ADDR[dst_ind], dst_IP=IPv4_ADDR[src_ind],
+#                          op="GET", value="0123456789abcdefghijklmnopqrstu", magic="Response", flags_extra="->?!")
+# expPkt(pad_pkt(pkt_resp2, 128), src_ind, dst_ind, src_known, dst_known, True, flags=0b000, reg_addr=43, value_size_out=31, expiration=0, key="__test2", opcode=0x00, magic=0x80, return_to_sender=True)
+
 
 write_pcap_files()

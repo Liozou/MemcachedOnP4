@@ -29,7 +29,7 @@ control TopPipe(inout headers hdr,
                 inout sume_metadata_t sume_metadata) {
 
     // Apart from the MemcachedControl part below, this control is copied from
-    // the P46NetFPGA contributed project "learning_switch".
+    // the P4NetFPGA contributed project "learning_switch".
 
     action set_output_port(port_t port) {
         sume_metadata.dst_port = port;
@@ -98,7 +98,7 @@ control TopPipe(inout headers hdr,
 
         if (hdr.ipv4.isValid()) {
             bit<16> result = 0;
-            // At this point, hdr.ipv4.hdrChecksum is still set to 0.
+            hdr.ipv4.hdrChecksum = 0;
             compute_ip_chksum(hdr.ipv4.version, hdr.ipv4.ihl, hdr.ipv4.diffserv, hdr.ipv4.totalLen, hdr.ipv4.identification, hdr.ipv4.flags, hdr.ipv4.fragOffset, hdr.ipv4.ttl, hdr.ipv4.protocol, hdr.ipv4.hdrChecksum, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, result);
             hdr.ipv4.hdrChecksum = result;
         }

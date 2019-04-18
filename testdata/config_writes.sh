@@ -52,3 +52,11 @@ ${SUME_SDNET}/sw/sume/rwaxi -a 0x44020250 -w 0xffffffff
 ${SUME_SDNET}/sw/sume/rwaxi -a 0x44020254 -w 0x0000ffff
 ${SUME_SDNET}/sw/sume/rwaxi -a 0x44020280 -w 0x00000001
 ${SUME_SDNET}/sw/sume/rwaxi -a 0x44020240 -w 0x00000001
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020350 -w 0x65737431
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020354 -w 0x005f5f74
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020380 -w 0x0000272a
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020340 -w 0x00000001
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020350 -w 0x65737432
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020354 -w 0x005f5f74
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020380 -w 0x00003f2b
+${SUME_SDNET}/sw/sume/rwaxi -a 0x44020340 -w 0x00000001

@@ -134,54 +134,6 @@
     "px_system_connections" : ["TopPipe_lvl_0.TopPipe_fl = TopPipe_lvl.TopPipe_fl", "TopPipe_lvl_0.digest_data = TopPipe_lvl.digest_data", "TopPipe_lvl_0.hdr = TopPipe_lvl.hdr", "TopPipe_lvl_0.local_state = TopPipe_lvl.local_state", "TopPipe_lvl_0.sume_metadata = TopPipe_lvl.sume_metadata", "TopPipe_lvl_0.user_metadata = TopPipe_lvl.user_metadata", "forward.request = TopPipe_lvl.forward_req", "TopPipe_lvl_0.forward_resp = forward.response", "TopPipe_lvl_1.TopPipe_fl = TopPipe_lvl_0.TopPipe_fl", "TopPipe_lvl_1.digest_data = TopPipe_lvl_0.digest_data", "TopPipe_lvl_1.forward_resp = TopPipe_lvl_0.forward_resp", "TopPipe_lvl_1.hdr = TopPipe_lvl_0.hdr", "TopPipe_lvl_1.local_state = TopPipe_lvl_0.local_state", "TopPipe_lvl_1.sume_metadata = TopPipe_lvl_0.sume_metadata", "TopPipe_lvl_1.user_metadata = TopPipe_lvl_0.user_metadata", "broadcast.request = TopPipe_lvl_0.broadcast_req", "smac.request = TopPipe_lvl_0.smac_req", "MemcachedControl_memcached_keyvalue_0.request = TopPipe_lvl_0.MemcachedControl_memcached_keyvalue_0_req", "TopPipe_lvl_1.broadcast_resp = broadcast.response", "TopPipe_lvl_1.smac_resp = smac.response", "TopPipe_lvl_1.MemcachedControl_memcached_keyvalue_0_resp = MemcachedControl_memcached_keyvalue_0.response", "TopPipe_lvl_2.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_1.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_2.TopPipe_fl = TopPipe_lvl_1.TopPipe_fl", "TopPipe_lvl_2.broadcast_resp = TopPipe_lvl_1.broadcast_resp", "TopPipe_lvl_2.digest_data = TopPipe_lvl_1.digest_data", "TopPipe_lvl_2.forward_resp = TopPipe_lvl_1.forward_resp", "TopPipe_lvl_2.hdr = TopPipe_lvl_1.hdr", "TopPipe_lvl_2.local_state = TopPipe_lvl_1.local_state", "TopPipe_lvl_2.smac_resp = TopPipe_lvl_1.smac_resp", "TopPipe_lvl_2.sume_metadata = TopPipe_lvl_1.sume_metadata", "TopPipe_lvl_2.user_metadata = TopPipe_lvl_1.user_metadata", "MemcachedControl_register_address_0.request = TopPipe_lvl_1.MemcachedControl_register_address_0_req", "TopPipe_lvl_2.MemcachedControl_register_address_0_resp = MemcachedControl_register_address_0.response", "TopPipe_lvl_3.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_2.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_3.MemcachedControl_register_address_0_resp = TopPipe_lvl_2.MemcachedControl_register_address_0_resp", "TopPipe_lvl_3.TopPipe_fl = TopPipe_lvl_2.TopPipe_fl", "TopPipe_lvl_3.broadcast_resp = TopPipe_lvl_2.broadcast_resp", "TopPipe_lvl_3.digest_data = TopPipe_lvl_2.digest_data", "TopPipe_lvl_3.forward_resp = TopPipe_lvl_2.forward_resp", "TopPipe_lvl_3.hdr = TopPipe_lvl_2.hdr", "TopPipe_lvl_3.local_state = TopPipe_lvl_2.local_state", "TopPipe_lvl_3.smac_resp = TopPipe_lvl_2.smac_resp", "TopPipe_lvl_3.sume_metadata = TopPipe_lvl_2.sume_metadata", "TopPipe_lvl_3.user_metadata = TopPipe_lvl_2.user_metadata", "slab256_reg_dataRW_0.slab256_reg_dataRW_input = TopPipe_lvl_2.slab256_reg_dataRW_input", "TopPipe_lvl_3.slab256_reg_dataRW_output = slab256_reg_dataRW_0.slab256_reg_dataRW_output", "TopPipe_lvl_4.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_3.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_4.MemcachedControl_register_address_0_resp = TopPipe_lvl_3.MemcachedControl_register_address_0_resp", "TopPipe_lvl_4.TopPipe_fl = TopPipe_lvl_3.TopPipe_fl", "TopPipe_lvl_4.broadcast_resp = TopPipe_lvl_3.broadcast_resp", "TopPipe_lvl_4.digest_data = TopPipe_lvl_3.digest_data", "TopPipe_lvl_4.forward_resp = TopPipe_lvl_3.forward_resp", "TopPipe_lvl_4.hdr = TopPipe_lvl_3.hdr", "TopPipe_lvl_4.local_state = TopPipe_lvl_3.local_state", "TopPipe_lvl_4.smac_resp = TopPipe_lvl_3.smac_resp", "TopPipe_lvl_4.sume_metadata = TopPipe_lvl_3.sume_metadata", "TopPipe_lvl_4.user_metadata = TopPipe_lvl_3.user_metadata", "slab128_reg_dataRW_0.slab128_reg_dataRW_input = TopPipe_lvl_3.slab128_reg_dataRW_input", "TopPipe_lvl_4.slab128_reg_dataRW_output = slab128_reg_dataRW_0.slab128_reg_dataRW_output", "TopPipe_lvl_5.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_4.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_5.MemcachedControl_register_address_0_resp = TopPipe_lvl_4.MemcachedControl_register_address_0_resp", "TopPipe_lvl_5.TopPipe_fl = TopPipe_lvl_4.TopPipe_fl", "TopPipe_lvl_5.broadcast_resp = TopPipe_lvl_4.broadcast_resp", "TopPipe_lvl_5.digest_data = TopPipe_lvl_4.digest_data", "TopPipe_lvl_5.forward_resp = TopPipe_lvl_4.forward_resp", "TopPipe_lvl_5.hdr = TopPipe_lvl_4.hdr", "TopPipe_lvl_5.local_state = TopPipe_lvl_4.local_state", "TopPipe_lvl_5.smac_resp = TopPipe_lvl_4.smac_resp", "TopPipe_lvl_5.sume_metadata = TopPipe_lvl_4.sume_metadata", "TopPipe_lvl_5.user_metadata = TopPipe_lvl_4.user_metadata", "slab64_reg_dataRW_0.slab64_reg_dataRW_input = TopPipe_lvl_4.slab64_reg_dataRW_input", "TopPipe_lvl_5.slab64_reg_dataRW_output = slab64_reg_dataRW_0.slab64_reg_dataRW_output", "TopPipe_lvl_6.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_5.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_6.MemcachedControl_register_address_0_resp = TopPipe_lvl_5.MemcachedControl_register_address_0_resp", "TopPipe_lvl_6.TopPipe_fl = TopPipe_lvl_5.TopPipe_fl", "TopPipe_lvl_6.broadcast_resp = TopPipe_lvl_5.broadcast_resp", "TopPipe_lvl_6.digest_data = TopPipe_lvl_5.digest_data", "TopPipe_lvl_6.forward_resp = TopPipe_lvl_5.forward_resp", "TopPipe_lvl_6.hdr = TopPipe_lvl_5.hdr", "TopPipe_lvl_6.local_state = TopPipe_lvl_5.local_state", "TopPipe_lvl_6.smac_resp = TopPipe_lvl_5.smac_resp", "TopPipe_lvl_6.sume_metadata = TopPipe_lvl_5.sume_metadata", "TopPipe_lvl_6.user_metadata = TopPipe_lvl_5.user_metadata", "compute_ip_chksum_0.compute_ip_chksum_input = TopPipe_lvl_5.compute_ip_chksum_input", "TopPipe_lvl_6.compute_ip_chksum_output = compute_ip_chksum_0.compute_ip_chksum_output"],
     "px_lookups" : [
       {
-        "px_name" : "MemcachedControl_register_address_0",
-        "p4_name" : "MemcachedControl_register_address_0",
-        "px_class" : "LookupEngine",
-        "px_type_name" : "MemcachedControl_register_address_0_t",
-        "match_type" : "EM",
-        "action_ids" : {
-          "TopPipe.MemcachedControl.set_register_address" : 1,
-          ".NoAction" : 2
-        },
-        "response_fields" : [
-          {
-            "px_name" : "hit",
-            "type" : "bits",
-            "size" : 1
-          },
-          {
-            "px_name" : "action_run",
-            "type" : "bits",
-            "size" : 2
-          },
-          {
-            "px_name" : "MemcachedControl_set_register_address",
-            "type" : "struct",
-            "fields" : [
-              {
-                "px_name" : "reg_addr",
-                "type" : "bits",
-                "size" : 8
-              }
-            ],
-            "p4_action" : "TopPipe.MemcachedControl.set_register_address"
-          }
-        ],
-        "request_fields" : [
-          {
-            "px_name" : "lookup_request_key",
-            "p4_name" : "slabID",
-            "type" : "bits",
-            "size" : 12
-          }
-        ],
-        "annotations" : {
-          "name" : ["TopPipe.MemcachedControl.register_address"],
-          "Xilinx_ExternallyConnected" : ["0"],
-          "Xilinx_LookupEngineType" : ["EM"]
-        }
-      },
-      {
         "px_name" : "MemcachedControl_memcached_keyvalue_0",
         "p4_name" : "MemcachedControl_memcached_keyvalue_0",
         "px_class" : "LookupEngine",
@@ -207,14 +159,9 @@
             "type" : "struct",
             "fields" : [
               {
-                "px_name" : "reg_addr",
+                "px_name" : "info",
                 "type" : "bits",
-                "size" : 8
-              },
-              {
-                "px_name" : "value_size",
-                "type" : "bits",
-                "size" : 5
+                "size" : 13
               }
             ],
             "p4_action" : "TopPipe.MemcachedControl.set_stored_info"
@@ -366,6 +313,54 @@
         ],
         "annotations" : {
           "name" : ["TopPipe.forward"],
+          "Xilinx_ExternallyConnected" : ["0"],
+          "Xilinx_LookupEngineType" : ["EM"]
+        }
+      },
+      {
+        "px_name" : "MemcachedControl_register_address_0",
+        "p4_name" : "MemcachedControl_register_address_0",
+        "px_class" : "LookupEngine",
+        "px_type_name" : "MemcachedControl_register_address_0_t",
+        "match_type" : "EM",
+        "action_ids" : {
+          "TopPipe.MemcachedControl.set_register_address" : 1,
+          ".NoAction" : 2
+        },
+        "response_fields" : [
+          {
+            "px_name" : "hit",
+            "type" : "bits",
+            "size" : 1
+          },
+          {
+            "px_name" : "action_run",
+            "type" : "bits",
+            "size" : 2
+          },
+          {
+            "px_name" : "MemcachedControl_set_register_address",
+            "type" : "struct",
+            "fields" : [
+              {
+                "px_name" : "reg_addr",
+                "type" : "bits",
+                "size" : 8
+              }
+            ],
+            "p4_action" : "TopPipe.MemcachedControl.set_register_address"
+          }
+        ],
+        "request_fields" : [
+          {
+            "px_name" : "lookup_request_key",
+            "p4_name" : "slabID",
+            "type" : "bits",
+            "size" : 12
+          }
+        ],
+        "annotations" : {
+          "name" : ["TopPipe.MemcachedControl.register_address"],
           "Xilinx_ExternallyConnected" : ["0"],
           "Xilinx_LookupEngineType" : ["EM"]
         }

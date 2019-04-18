@@ -1,7 +1,7 @@
 
 from NFTest import *
 
-NUM_WRITES = 52
+NUM_WRITES = 60
 
 def config_tables():
     nftest_regwrite(0x44020050, 0x11111108)
@@ -56,3 +56,11 @@ def config_tables():
     nftest_regwrite(0x44020254, 0x0000ffff)
     nftest_regwrite(0x44020280, 0x00000001)
     nftest_regwrite(0x44020240, 0x00000001)
+    nftest_regwrite(0x44020350, 0x65737431)
+    nftest_regwrite(0x44020354, 0x005f5f74)
+    nftest_regwrite(0x44020380, 0x0000272a)
+    nftest_regwrite(0x44020340, 0x00000001)
+    nftest_regwrite(0x44020350, 0x65737432)
+    nftest_regwrite(0x44020354, 0x005f5f74)
+    nftest_regwrite(0x44020380, 0x00003f2b)
+    nftest_regwrite(0x44020340, 0x00000001)

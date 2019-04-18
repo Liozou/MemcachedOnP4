@@ -35,9 +35,9 @@ control MemcachedControl(inout headers hdr,
      * The values are not directly stored in the tables because of their size.
      */
 
-    action set_stored_info(regAddr_t reg_addr, bit<5> value_size) {
-        user_metadata.reg_addr = reg_addr;
-        user_metadata.value_size_out = value_size;
+    action set_stored_info(bit<13> info) {
+        user_metadata.reg_addr = info[7:0];
+        user_metadata.value_size_out = info[12:8];
     }
     table memcached_keyvalue {
         key = { user_metadata.key: exact; }
@@ -163,7 +163,9 @@ control MemcachedControl(inout headers hdr,
                     } else {
                         UNSET_KEY
                         hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
+                        hdr.memcached.key_length = 0;
                     }
+                    hdr.memcached.extras_length = 4;
 
                     hdr.memcached.magic = 0x81; // Returning a response packet
                     hdr.memcached.vbucket_id = 0; // No error
@@ -177,7 +179,6 @@ control MemcachedControl(inout headers hdr,
                     hdr.ipv4.ttl = 0x40; // Creating a new packet so setting up a new TTL.
                 } else {
                     hdr.memcached.opcode = 0x0c; // GETK
-                    digest_data.was_get_miss = 1;
                 }
             }
 
@@ -192,7 +193,6 @@ control MemcachedControl(inout headers hdr,
         digest_data.key = user_metadata.key;
         digest_data.value_size_out = user_metadata.value_size_out;
         digest_data.reg_addr = user_metadata.reg_addr;
-        digest_data.was_stored_key = (bit<1>)is_stored_key;
 
         hdr.udp.checksum = 0; // We do not support udp checksum computation.
     }

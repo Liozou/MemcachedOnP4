@@ -6,7 +6,7 @@
 // Stanford University and the University of Cambridge Computer Laboratory
 // under National Science Foundation under Grant No. CNS-0855268,
 // the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-// by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+// by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 // as part of the DARPA MRC research programme.
 //
 // @NETFPGA_LICENSE_HEADER_START@
@@ -41,7 +41,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 `timescale 1 ps / 1 ps
 
-  module small_fifo
+  module small_fifo_regdataRW
     #(parameter WIDTH = 72,
       parameter MAX_DEPTH_BITS = 3,
       parameter PROG_FULL_THRESHOLD = 2**MAX_DEPTH_BITS - 1
@@ -123,4 +123,3 @@ end
 // synthesis translate_on
 
 endmodule // small_fifo
-
