@@ -83,24 +83,24 @@ control MemcachedControl(inout headers hdr,
              * pair and no error happened there.
              */
 
-            // bit<5> x_value_size_in = user_metadata.value_size[4:0];
-            // x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
-            // x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
-            // x_value_size_in[0:0] = x_value_size_in[0:0] | x_value_size_in[1:1];
-            // bit<5> x_value_size_out = user_metadata.value_size_out;
-            // x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
-            // x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
-            // x_value_size_out[0:0] = x_value_size_out[0:0] | x_value_size_out[1:1];
+            bit<5> x_value_size_in = user_metadata.value_size[4:0];
+            x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
+            x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
+            x_value_size_in[0:0] = x_value_size_in[0:0] | x_value_size_in[1:1];
+            bit<5> x_value_size_out = user_metadata.value_size_out;
+            x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
+            x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
+            x_value_size_out[0:0] = x_value_size_out[0:0] | x_value_size_out[1:1];
 
             user_metadata.value_size_out = user_metadata.value_size[4:0];
             reg_opcode = REG_WRITE;
-            // if (x_value_size_in != x_value_size_out) {
-            //     /* This will be executed either if memcached_keyvalue was a miss
-            //      * (because then value_size_out = 0) or if it was a hit but the
-            //      * stored value is not in the same slab as the new value.
-            //      * Indeed, x_value_size_in == x_value_size_out if and only if
-            //      * value_size_out and value_size have the same highest set bit.
-            //      */
+            if (x_value_size_in != x_value_size_out) {
+                /* This will be executed either if memcached_keyvalue was a miss
+                 * (because then value_size_out = 0) or if it was a hit but the
+                 * stored value is not in the same slab as the new value.
+                 * Indeed, x_value_size_in == x_value_size_out if and only if
+                 * value_size_out and value_size have the same highest set bit.
+                 */
 
                 if (user_metadata.value_size_out <= 8) { slabID = 1; }
                 else if (user_metadata.value_size_out <= 16) { slabID = 2; }
@@ -109,7 +109,7 @@ control MemcachedControl(inout headers hdr,
                 register_address.apply();
                 digest_data.store_new_key = 1;
                 digest_data.remove_this_key = (bit<1>)is_stored_key;
-            // }
+            }
 
             if (!user_metadata.isRequest) { // i.e. opcode is GETK
                 hdr.memcached.opcode = 0x00;
