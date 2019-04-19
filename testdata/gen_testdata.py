@@ -202,12 +202,12 @@ def make_extras(op, magic="Request", flags_extra="", expiration=0, **kwargs):
         return flags_extra + s
 
 def make_memcached_pkt(src_MAC, dst_MAC, src_IP, dst_IP, key="", value="", **kwargs):
-    pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=src_IP, dst=dst_IP) / UDP(dport=11211, chksum=0)
+    pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=src_IP, dst=dst_IP) / UDP(dport=11211, sport=11211, chksum=0)
     pkt = pkt / make_memcached_hdr(len(key), len(value), **kwargs) / make_extras(**kwargs) / (key + value)
     return pkt
 
 def make_random_pkt(src_MAC, dst_MAC, src_IP, dst_IP):
-    pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=src_IP, dst=dst_IP) / UDP(dport=11212)
+    pkt = Ether(src=src_MAC, dst=dst_MAC) / IP(src=src_IP, dst=dst_IP) / UDP(dport=11212, sport=11212)
     return pkt
 
 def pad32(pkt):
@@ -378,7 +378,7 @@ src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
 pkt_set1 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
                          op="SET", key="__test1", value="goodbye", flags_extra="kill", expiration=0)
 applyPkt(pad32(pkt_set1), src_ind)
-expPkt(pad32(pkt_set1), src_ind, dst_ind, src_known, dst_known, True, flags=0b000, reg_addr=42, value_size_out=7, expiration=0, key="__test1", opcode=0x01, magic=0x80)
+expPkt(pad32(pkt_set1), src_ind, dst_ind, src_known, dst_known, True, flags=0b011, reg_addr=42, value_size_out=7, expiration=0, key="__test1", opcode=0x01, magic=0x80)
 
 src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
 pkt_get1 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
@@ -395,7 +395,7 @@ src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
 pkt_set2 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],
                          op="SET", key="__test2", value="0123456789abcdefghijklmnopqrstu", flags_extra="->?!", expiration=0)
 applyPkt(pad32(pkt_set2), src_ind)
-expPkt(pad32(pkt_set2), src_ind, dst_ind, src_known, dst_known, True, flags=0b000, reg_addr=43, value_size_out=31, expiration=0, key="__test2", opcode=0x01, magic=0x80)
+expPkt(pad32(pkt_set2), src_ind, dst_ind, src_known, dst_known, True, flags=0b011, reg_addr=43, value_size_out=31, expiration=0, key="__test2", opcode=0x01, magic=0x80)
 
 src_known, dst_known, src_ind, dst_ind, src_MAC, dst_MAC = prepare_addr()
 pkt_get2 = make_memcached_pkt(src_MAC=src_MAC, dst_MAC=dst_MAC, src_IP=IPv4_ADDR[src_ind], dst_IP=IPv4_ADDR[dst_ind],

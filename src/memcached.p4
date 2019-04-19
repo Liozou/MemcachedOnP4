@@ -70,45 +70,37 @@ control MemcachedControl(inout headers hdr,
 
         bool is_stored_key = memcached_keyvalue.apply().hit;
 
-        // if (user_metadata.isRequest && hdr.memcached.CAS != 0) {
-        //     // Unsupported operation, but the server should answer it.
-        //     // This makes the control place remove the key from the table.
-        //     sume_metadata.send_dig_to_cpu = 1;
-        //     digest_data.magic = hdr.memcached.magic;
-        //     digest_data.opcode = 8w0xff; // Invalid opcode (to prevent triggering any undesired behaviour from the control plane)
-        //     digest_data.key = user_metadata.key;
-        //     digest_data.value_size_out = user_metadata.value_size[4:0];
-        //     digest_data.reg_addr = user_metadata.reg_addr;
-        //     digest_data.remove_this_key = (bit<1>)is_stored_key;
-        //     return;
-        // }
-
-
         bool do_reg_operation = OP_IS_GET && is_stored_key;
 
         bit<8> reg_opcode = REG_READ;
 
         if (user_metadata.isRequest ? OP_IS_SET : OP_IS_GETK) {
 
-            do_reg_operation = true;
-            bit<5> x_value_size_in = user_metadata.value_size[4:0];
-            x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
-            x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
-            x_value_size_in[0:0] = x_value_size_in[0:0] | x_value_size_in[1:1];
-            bit<5> x_value_size_out = user_metadata.value_size_out;
-            x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
-            x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
-            x_value_size_out[0:0] = x_value_size_out[0:0] | x_value_size_out[1:1];
+            do_reg_operation = (hdr.memcached.vbucket_id == 0);
+            /* If OP_IS_SET, this is just a sanity check since we only handle a
+             * single bucket
+             * If OP_IS_GETK, this ensures that the server had the key-value
+             * pair and no error happened there.
+             */
+
+            // bit<5> x_value_size_in = user_metadata.value_size[4:0];
+            // x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
+            // x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
+            // x_value_size_in[0:0] = x_value_size_in[0:0] | x_value_size_in[1:1];
+            // bit<5> x_value_size_out = user_metadata.value_size_out;
+            // x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
+            // x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
+            // x_value_size_out[0:0] = x_value_size_out[0:0] | x_value_size_out[1:1];
 
             user_metadata.value_size_out = user_metadata.value_size[4:0];
             reg_opcode = REG_WRITE;
-            if (x_value_size_in != x_value_size_out) {
-                /* This will be executed either if memcached_keyvalue was a miss
-                 * (because then value_size_out = 0) or if it was a hit but the
-                 * stored value is not in the same slab as the new value.
-                 * Indeed, x_value_size_in == x_value_size_out if and only if
-                 * value_size_out and value_size have the same highest set bit.
-                 */
+            // if (x_value_size_in != x_value_size_out) {
+            //     /* This will be executed either if memcached_keyvalue was a miss
+            //      * (because then value_size_out = 0) or if it was a hit but the
+            //      * stored value is not in the same slab as the new value.
+            //      * Indeed, x_value_size_in == x_value_size_out if and only if
+            //      * value_size_out and value_size have the same highest set bit.
+            //      */
 
                 if (user_metadata.value_size_out <= 8) { slabID = 1; }
                 else if (user_metadata.value_size_out <= 16) { slabID = 2; }
@@ -117,11 +109,18 @@ control MemcachedControl(inout headers hdr,
                 register_address.apply();
                 digest_data.store_new_key = 1;
                 digest_data.remove_this_key = (bit<1>)is_stored_key;
-            }
+            // }
 
-            if (!user_metadata.isRequest && OP_IS_GETK) {
-                hdr.memcached.opcode = 0x00; // Seems authorized by BinaryProtocolRevamped even for GETK
-                // Past this point, OP_IS_GETK merges with OP_IS_GET if the packet is a response
+            if (!user_metadata.isRequest) { // i.e. opcode is GETK
+                hdr.memcached.opcode = 0x00;
+                hdr.memcached.total_body = hdr.memcached.total_body - (bit<32>) hdr.memcached.key_length;
+                hdr.memcached.key_length = 0;
+                UNSET_KEY
+                /* Past this point, OP_IS_GETK merges with OP_IS_GET if the
+                 * packet is a response.
+                 * The only difference is that if the packet used to be
+                 * OP_IS_GETK, the new key-value will be added to the store
+                 */
             }
 
         }
@@ -149,35 +148,35 @@ control MemcachedControl(inout headers hdr,
         digest_data.magic = hdr.memcached.magic;
         digest_data.opcode = hdr.memcached.opcode;
 
-        if (user_metadata.isRequest) {
+        if (user_metadata.isRequest && OP_IS_GET) {
+            if (is_stored_key) {
+                hdr.extras_flags.setValid();
+                hdr.extras_flags.flags = user_metadata.value[31:0];
+                user_metadata.value[INTERNAL_VALUE_SIZE-33:0] = user_metadata.value[INTERNAL_VALUE_SIZE-1:32];
 
-            if (OP_IS_GET) {
-                if (is_stored_key) {
-                    hdr.extras_flags.setValid();
-                    hdr.extras_flags.flags = user_metadata.value[31:0];
-                    user_metadata.value[INTERNAL_VALUE_SIZE-33:0] = user_metadata.value[INTERNAL_VALUE_SIZE-1:32];
-                    REPOPULATE_VALUE
-                    UNSET_KEY
-                    hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
-                    hdr.ipv4.totalLen = hdr.ipv4.totalLen + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
-                    hdr.udp.udpLength = hdr.udp.udpLength + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
-                    hdr.memcached.key_length = 0;
-                    hdr.memcached.extras_length = 4;
-                    hdr.memcached.magic = 0x81; // Returning a response packet
-                    hdr.memcached.vbucket_id = 0; // No error
-                    sume_metadata.dst_port = sume_metadata.src_port;
-                    bit<48> tmpEth = hdr.ethernet.dstAddr;
-                    hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
-                    hdr.ethernet.srcAddr = tmpEth;
-                    bit<32> tmpIP = hdr.ipv4.dstAddr;
-                    hdr.ipv4.dstAddr = hdr.ipv4.srcAddr;
-                    hdr.ipv4.srcAddr = tmpIP;
-                    hdr.ipv4.ttl = 0x40; // Creating a new packet so setting up a new TTL.
-                } else {
-                    hdr.memcached.opcode = 0x0c; // GETK
-                }
+                REPOPULATE_VALUE
+                UNSET_KEY
+
+                hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
+                hdr.ipv4.totalLen = hdr.ipv4.totalLen + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
+                hdr.udp.udpLength = hdr.udp.udpLength + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
+
+                hdr.memcached.key_length = 0;
+                hdr.memcached.extras_length = 4;
+                hdr.memcached.magic = 0x81; // Returning a response packet
+                hdr.memcached.vbucket_id = 0; // No error
+
+                sume_metadata.dst_port = sume_metadata.src_port;
+                bit<48> tmpEth = hdr.ethernet.dstAddr;
+                hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
+                hdr.ethernet.srcAddr = tmpEth;
+                bit<32> tmpIP = hdr.ipv4.dstAddr;
+                hdr.ipv4.dstAddr = hdr.ipv4.srcAddr;
+                hdr.ipv4.srcAddr = tmpIP;
+                hdr.ipv4.ttl = 0x40; // Creating a new packet so setting up a new TTL.
+            } else {
+                hdr.memcached.opcode = 0x0c; // GETK
             }
-
         }
 
         sume_metadata.send_dig_to_cpu = 1;
