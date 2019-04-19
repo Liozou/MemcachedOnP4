@@ -44,4 +44,3 @@
 #define OP_IS_GET (hdr.memcached.opcode==0x00)
 #define OP_IS_SET (hdr.memcached.opcode==0x01)
 #define OP_IS_GETK (hdr.memcached.opcode==0x0c)
-#define OP_IS_DELETE (hdr.memcached.opcode==0x04)

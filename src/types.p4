@@ -83,10 +83,9 @@ struct headers {
 
 // digest data to send to cpu if desired
 struct digest_data_t {
-    bit<16> fuzz;
     bit<8> magic;
     bit<8> opcode;
-    bit<8> unused;
+    bit<24> unused;
     bit<56> key;
     bit<32> expiration;
     bit<3> padding;

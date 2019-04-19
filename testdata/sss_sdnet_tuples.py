@@ -45,9 +45,9 @@ tuple_expect_file = "Tuple_expect.txt"
 
 # Diget Data MUST be 256 bits
 """ Digest Data:
-   fuzz            (16 bits)
    magic           (8 bits)
    opcode          (8 bits)
+   exfuzz          (16 bits)
    key             (64 bits)
    expiration      (32 bits)
    value_size_out  (8 bits)
@@ -59,9 +59,9 @@ tuple_expect_file = "Tuple_expect.txt"
 """
 
 dig_field_len = collections.OrderedDict()
-dig_field_len['fuzz'] = 16
 dig_field_len['magic'] = 8
 dig_field_len['opcode'] = 8
+dig_field_len['exfuzz'] = 16
 dig_field_len['key'] = 64
 dig_field_len['expiration'] = 32
 dig_field_len['value_size_out'] = 8
@@ -73,9 +73,9 @@ dig_field_len['src_port'] = 8
 
 #initialize tuple_expect
 dig_tuple_expect = collections.OrderedDict()
-dig_tuple_expect['fuzz'] = 0
 dig_tuple_expect['magic'] = 0
 dig_tuple_expect['opcode'] = 0
+dig_tuple_expect['exfuzz'] = 0
 dig_tuple_expect['key'] = 0
 dig_tuple_expect['expiration'] = 0
 dig_tuple_expect['value_size_out'] = 0

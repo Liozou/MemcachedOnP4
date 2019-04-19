@@ -50,7 +50,6 @@ parser TopParser(packet_in buffer,
         user_metadata.key = 0;
         user_metadata.value = 0;
 
-        digest_data.fuzz = 0xbbbb;
         digest_data.magic = 0;
         digest_data.opcode = 0;
         digest_data.unused = 0;
@@ -77,7 +76,7 @@ parser TopParser(packet_in buffer,
         buffer.extract(hdr.ipv4);
         transition select(hdr.ipv4.ihl) {
             5: parse_protocol;
-            default: reject; // Unhandled IPv4 options
+            default: accept; // Unhandled IPv4 options
         }
     }
 

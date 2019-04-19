@@ -35,9 +35,9 @@ control MemcachedControl(inout headers hdr,
      * The values are not directly stored in the tables because of their size.
      */
 
-    action set_stored_info(bit<13> info) {
-        user_metadata.reg_addr = info[7:0];
-        user_metadata.value_size_out = info[12:8];
+    action set_stored_info(regAddr_t reg_addr, bit<5> value_size) {
+        user_metadata.reg_addr = reg_addr;
+        user_metadata.value_size_out = value_size;
     }
     table memcached_keyvalue {
         key = { user_metadata.key: exact; }
@@ -84,12 +84,11 @@ control MemcachedControl(inout headers hdr,
         // }
 
 
-        bool do_reg_operation = (OP_IS_GET || OP_IS_GETK) && is_stored_key;
+        bool do_reg_operation = OP_IS_GET && is_stored_key;
 
         bit<8> reg_opcode = REG_READ;
 
-        if ((user_metadata.isRequest && OP_IS_SET) ||
-           (!user_metadata.isRequest && OP_IS_GETK)) {
+        if (user_metadata.isRequest ? OP_IS_SET : OP_IS_GETK) {
 
             do_reg_operation = true;
             bit<5> x_value_size_in = user_metadata.value_size[4:0];
@@ -152,21 +151,18 @@ control MemcachedControl(inout headers hdr,
 
         if (user_metadata.isRequest) {
 
-            if (OP_IS_GET || OP_IS_GETK) {
+            if (OP_IS_GET) {
                 if (is_stored_key) {
                     hdr.extras_flags.setValid();
                     hdr.extras_flags.flags = user_metadata.value[31:0];
                     user_metadata.value[INTERNAL_VALUE_SIZE-33:0] = user_metadata.value[INTERNAL_VALUE_SIZE-1:32];
                     REPOPULATE_VALUE
-                    if (OP_IS_GETK) {
-                        hdr.memcached.total_body = (bit<32>)((bit<16>)user_metadata.value_size_out + hdr.memcached.key_length + 4);
-                    } else {
-                        UNSET_KEY
-                        hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
-                        hdr.memcached.key_length = 0;
-                    }
+                    UNSET_KEY
+                    hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
+                    hdr.ipv4.totalLen = hdr.ipv4.totalLen + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
+                    hdr.udp.udpLength = hdr.udp.udpLength + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
+                    hdr.memcached.key_length = 0;
                     hdr.memcached.extras_length = 4;
-
                     hdr.memcached.magic = 0x81; // Returning a response packet
                     hdr.memcached.vbucket_id = 0; // No error
                     sume_metadata.dst_port = sume_metadata.src_port;
@@ -185,7 +181,6 @@ control MemcachedControl(inout headers hdr,
         }
 
         sume_metadata.send_dig_to_cpu = 1;
-        digest_data.fuzz = 0xaaaa;
 
         /* The next values are copied back from user_metadata instead of being
          * directly modified on the digest because it leads to better timing

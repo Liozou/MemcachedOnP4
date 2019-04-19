@@ -75,16 +75,16 @@
         "px_type_name" : "TopPipe_lvl_0_t"
       },
       {
+        "px_name" : "broadcast",
+        "px_type_name" : "broadcast_t"
+      },
+      {
         "px_name" : "smac",
         "px_type_name" : "smac_t"
       },
       {
         "px_name" : "MemcachedControl_memcached_keyvalue_0",
         "px_type_name" : "MemcachedControl_memcached_keyvalue_0_t"
-      },
-      {
-        "px_name" : "broadcast",
-        "px_type_name" : "broadcast_t"
       },
       {
         "px_name" : "TopPipe_lvl_1",
@@ -131,56 +131,8 @@
         "px_type_name" : "TopPipe_lvl_6_t"
       }
     ],
-    "px_system_connections" : ["TopPipe_lvl_0.TopPipe_fl = TopPipe_lvl.TopPipe_fl", "TopPipe_lvl_0.digest_data = TopPipe_lvl.digest_data", "TopPipe_lvl_0.hdr = TopPipe_lvl.hdr", "TopPipe_lvl_0.local_state = TopPipe_lvl.local_state", "TopPipe_lvl_0.sume_metadata = TopPipe_lvl.sume_metadata", "TopPipe_lvl_0.user_metadata = TopPipe_lvl.user_metadata", "forward.request = TopPipe_lvl.forward_req", "TopPipe_lvl_0.forward_resp = forward.response", "TopPipe_lvl_1.TopPipe_fl = TopPipe_lvl_0.TopPipe_fl", "TopPipe_lvl_1.digest_data = TopPipe_lvl_0.digest_data", "TopPipe_lvl_1.forward_resp = TopPipe_lvl_0.forward_resp", "TopPipe_lvl_1.hdr = TopPipe_lvl_0.hdr", "TopPipe_lvl_1.local_state = TopPipe_lvl_0.local_state", "TopPipe_lvl_1.sume_metadata = TopPipe_lvl_0.sume_metadata", "TopPipe_lvl_1.user_metadata = TopPipe_lvl_0.user_metadata", "smac.request = TopPipe_lvl_0.smac_req", "MemcachedControl_memcached_keyvalue_0.request = TopPipe_lvl_0.MemcachedControl_memcached_keyvalue_0_req", "broadcast.request = TopPipe_lvl_0.broadcast_req", "TopPipe_lvl_1.smac_resp = smac.response", "TopPipe_lvl_1.MemcachedControl_memcached_keyvalue_0_resp = MemcachedControl_memcached_keyvalue_0.response", "TopPipe_lvl_1.broadcast_resp = broadcast.response", "TopPipe_lvl_2.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_1.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_2.TopPipe_fl = TopPipe_lvl_1.TopPipe_fl", "TopPipe_lvl_2.broadcast_resp = TopPipe_lvl_1.broadcast_resp", "TopPipe_lvl_2.digest_data = TopPipe_lvl_1.digest_data", "TopPipe_lvl_2.forward_resp = TopPipe_lvl_1.forward_resp", "TopPipe_lvl_2.hdr = TopPipe_lvl_1.hdr", "TopPipe_lvl_2.local_state = TopPipe_lvl_1.local_state", "TopPipe_lvl_2.smac_resp = TopPipe_lvl_1.smac_resp", "TopPipe_lvl_2.sume_metadata = TopPipe_lvl_1.sume_metadata", "TopPipe_lvl_2.user_metadata = TopPipe_lvl_1.user_metadata", "MemcachedControl_register_address_0.request = TopPipe_lvl_1.MemcachedControl_register_address_0_req", "TopPipe_lvl_2.MemcachedControl_register_address_0_resp = MemcachedControl_register_address_0.response", "TopPipe_lvl_3.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_2.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_3.MemcachedControl_register_address_0_resp = TopPipe_lvl_2.MemcachedControl_register_address_0_resp", "TopPipe_lvl_3.TopPipe_fl = TopPipe_lvl_2.TopPipe_fl", "TopPipe_lvl_3.broadcast_resp = TopPipe_lvl_2.broadcast_resp", "TopPipe_lvl_3.digest_data = TopPipe_lvl_2.digest_data", "TopPipe_lvl_3.forward_resp = TopPipe_lvl_2.forward_resp", "TopPipe_lvl_3.hdr = TopPipe_lvl_2.hdr", "TopPipe_lvl_3.local_state = TopPipe_lvl_2.local_state", "TopPipe_lvl_3.smac_resp = TopPipe_lvl_2.smac_resp", "TopPipe_lvl_3.sume_metadata = TopPipe_lvl_2.sume_metadata", "TopPipe_lvl_3.user_metadata = TopPipe_lvl_2.user_metadata", "slab256_reg_dataRW_0.slab256_reg_dataRW_input = TopPipe_lvl_2.slab256_reg_dataRW_input", "TopPipe_lvl_3.slab256_reg_dataRW_output = slab256_reg_dataRW_0.slab256_reg_dataRW_output", "TopPipe_lvl_4.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_3.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_4.MemcachedControl_register_address_0_resp = TopPipe_lvl_3.MemcachedControl_register_address_0_resp", "TopPipe_lvl_4.TopPipe_fl = TopPipe_lvl_3.TopPipe_fl", "TopPipe_lvl_4.broadcast_resp = TopPipe_lvl_3.broadcast_resp", "TopPipe_lvl_4.digest_data = TopPipe_lvl_3.digest_data", "TopPipe_lvl_4.forward_resp = TopPipe_lvl_3.forward_resp", "TopPipe_lvl_4.hdr = TopPipe_lvl_3.hdr", "TopPipe_lvl_4.local_state = TopPipe_lvl_3.local_state", "TopPipe_lvl_4.smac_resp = TopPipe_lvl_3.smac_resp", "TopPipe_lvl_4.sume_metadata = TopPipe_lvl_3.sume_metadata", "TopPipe_lvl_4.user_metadata = TopPipe_lvl_3.user_metadata", "slab128_reg_dataRW_0.slab128_reg_dataRW_input = TopPipe_lvl_3.slab128_reg_dataRW_input", "TopPipe_lvl_4.slab128_reg_dataRW_output = slab128_reg_dataRW_0.slab128_reg_dataRW_output", "TopPipe_lvl_5.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_4.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_5.MemcachedControl_register_address_0_resp = TopPipe_lvl_4.MemcachedControl_register_address_0_resp", "TopPipe_lvl_5.TopPipe_fl = TopPipe_lvl_4.TopPipe_fl", "TopPipe_lvl_5.broadcast_resp = TopPipe_lvl_4.broadcast_resp", "TopPipe_lvl_5.digest_data = TopPipe_lvl_4.digest_data", "TopPipe_lvl_5.forward_resp = TopPipe_lvl_4.forward_resp", "TopPipe_lvl_5.hdr = TopPipe_lvl_4.hdr", "TopPipe_lvl_5.local_state = TopPipe_lvl_4.local_state", "TopPipe_lvl_5.smac_resp = TopPipe_lvl_4.smac_resp", "TopPipe_lvl_5.sume_metadata = TopPipe_lvl_4.sume_metadata", "TopPipe_lvl_5.user_metadata = TopPipe_lvl_4.user_metadata", "slab64_reg_dataRW_0.slab64_reg_dataRW_input = TopPipe_lvl_4.slab64_reg_dataRW_input", "TopPipe_lvl_5.slab64_reg_dataRW_output = slab64_reg_dataRW_0.slab64_reg_dataRW_output", "TopPipe_lvl_6.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_5.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_6.MemcachedControl_register_address_0_resp = TopPipe_lvl_5.MemcachedControl_register_address_0_resp", "TopPipe_lvl_6.TopPipe_fl = TopPipe_lvl_5.TopPipe_fl", "TopPipe_lvl_6.broadcast_resp = TopPipe_lvl_5.broadcast_resp", "TopPipe_lvl_6.digest_data = TopPipe_lvl_5.digest_data", "TopPipe_lvl_6.forward_resp = TopPipe_lvl_5.forward_resp", "TopPipe_lvl_6.hdr = TopPipe_lvl_5.hdr", "TopPipe_lvl_6.local_state = TopPipe_lvl_5.local_state", "TopPipe_lvl_6.smac_resp = TopPipe_lvl_5.smac_resp", "TopPipe_lvl_6.sume_metadata = TopPipe_lvl_5.sume_metadata", "TopPipe_lvl_6.user_metadata = TopPipe_lvl_5.user_metadata", "compute_ip_chksum_0.compute_ip_chksum_input = TopPipe_lvl_5.compute_ip_chksum_input", "TopPipe_lvl_6.compute_ip_chksum_output = compute_ip_chksum_0.compute_ip_chksum_output"],
+    "px_system_connections" : ["TopPipe_lvl_0.TopPipe_fl = TopPipe_lvl.TopPipe_fl", "TopPipe_lvl_0.digest_data = TopPipe_lvl.digest_data", "TopPipe_lvl_0.hdr = TopPipe_lvl.hdr", "TopPipe_lvl_0.local_state = TopPipe_lvl.local_state", "TopPipe_lvl_0.sume_metadata = TopPipe_lvl.sume_metadata", "TopPipe_lvl_0.user_metadata = TopPipe_lvl.user_metadata", "forward.request = TopPipe_lvl.forward_req", "TopPipe_lvl_0.forward_resp = forward.response", "TopPipe_lvl_1.TopPipe_fl = TopPipe_lvl_0.TopPipe_fl", "TopPipe_lvl_1.digest_data = TopPipe_lvl_0.digest_data", "TopPipe_lvl_1.forward_resp = TopPipe_lvl_0.forward_resp", "TopPipe_lvl_1.hdr = TopPipe_lvl_0.hdr", "TopPipe_lvl_1.local_state = TopPipe_lvl_0.local_state", "TopPipe_lvl_1.sume_metadata = TopPipe_lvl_0.sume_metadata", "TopPipe_lvl_1.user_metadata = TopPipe_lvl_0.user_metadata", "broadcast.request = TopPipe_lvl_0.broadcast_req", "smac.request = TopPipe_lvl_0.smac_req", "MemcachedControl_memcached_keyvalue_0.request = TopPipe_lvl_0.MemcachedControl_memcached_keyvalue_0_req", "TopPipe_lvl_1.broadcast_resp = broadcast.response", "TopPipe_lvl_1.smac_resp = smac.response", "TopPipe_lvl_1.MemcachedControl_memcached_keyvalue_0_resp = MemcachedControl_memcached_keyvalue_0.response", "TopPipe_lvl_2.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_1.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_2.TopPipe_fl = TopPipe_lvl_1.TopPipe_fl", "TopPipe_lvl_2.broadcast_resp = TopPipe_lvl_1.broadcast_resp", "TopPipe_lvl_2.digest_data = TopPipe_lvl_1.digest_data", "TopPipe_lvl_2.forward_resp = TopPipe_lvl_1.forward_resp", "TopPipe_lvl_2.hdr = TopPipe_lvl_1.hdr", "TopPipe_lvl_2.local_state = TopPipe_lvl_1.local_state", "TopPipe_lvl_2.smac_resp = TopPipe_lvl_1.smac_resp", "TopPipe_lvl_2.sume_metadata = TopPipe_lvl_1.sume_metadata", "TopPipe_lvl_2.user_metadata = TopPipe_lvl_1.user_metadata", "MemcachedControl_register_address_0.request = TopPipe_lvl_1.MemcachedControl_register_address_0_req", "TopPipe_lvl_2.MemcachedControl_register_address_0_resp = MemcachedControl_register_address_0.response", "TopPipe_lvl_3.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_2.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_3.MemcachedControl_register_address_0_resp = TopPipe_lvl_2.MemcachedControl_register_address_0_resp", "TopPipe_lvl_3.TopPipe_fl = TopPipe_lvl_2.TopPipe_fl", "TopPipe_lvl_3.broadcast_resp = TopPipe_lvl_2.broadcast_resp", "TopPipe_lvl_3.digest_data = TopPipe_lvl_2.digest_data", "TopPipe_lvl_3.forward_resp = TopPipe_lvl_2.forward_resp", "TopPipe_lvl_3.hdr = TopPipe_lvl_2.hdr", "TopPipe_lvl_3.local_state = TopPipe_lvl_2.local_state", "TopPipe_lvl_3.smac_resp = TopPipe_lvl_2.smac_resp", "TopPipe_lvl_3.sume_metadata = TopPipe_lvl_2.sume_metadata", "TopPipe_lvl_3.user_metadata = TopPipe_lvl_2.user_metadata", "slab256_reg_dataRW_0.slab256_reg_dataRW_input = TopPipe_lvl_2.slab256_reg_dataRW_input", "TopPipe_lvl_3.slab256_reg_dataRW_output = slab256_reg_dataRW_0.slab256_reg_dataRW_output", "TopPipe_lvl_4.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_3.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_4.MemcachedControl_register_address_0_resp = TopPipe_lvl_3.MemcachedControl_register_address_0_resp", "TopPipe_lvl_4.TopPipe_fl = TopPipe_lvl_3.TopPipe_fl", "TopPipe_lvl_4.broadcast_resp = TopPipe_lvl_3.broadcast_resp", "TopPipe_lvl_4.digest_data = TopPipe_lvl_3.digest_data", "TopPipe_lvl_4.forward_resp = TopPipe_lvl_3.forward_resp", "TopPipe_lvl_4.hdr = TopPipe_lvl_3.hdr", "TopPipe_lvl_4.local_state = TopPipe_lvl_3.local_state", "TopPipe_lvl_4.smac_resp = TopPipe_lvl_3.smac_resp", "TopPipe_lvl_4.sume_metadata = TopPipe_lvl_3.sume_metadata", "TopPipe_lvl_4.user_metadata = TopPipe_lvl_3.user_metadata", "slab128_reg_dataRW_0.slab128_reg_dataRW_input = TopPipe_lvl_3.slab128_reg_dataRW_input", "TopPipe_lvl_4.slab128_reg_dataRW_output = slab128_reg_dataRW_0.slab128_reg_dataRW_output", "TopPipe_lvl_5.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_4.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_5.MemcachedControl_register_address_0_resp = TopPipe_lvl_4.MemcachedControl_register_address_0_resp", "TopPipe_lvl_5.TopPipe_fl = TopPipe_lvl_4.TopPipe_fl", "TopPipe_lvl_5.broadcast_resp = TopPipe_lvl_4.broadcast_resp", "TopPipe_lvl_5.digest_data = TopPipe_lvl_4.digest_data", "TopPipe_lvl_5.forward_resp = TopPipe_lvl_4.forward_resp", "TopPipe_lvl_5.hdr = TopPipe_lvl_4.hdr", "TopPipe_lvl_5.local_state = TopPipe_lvl_4.local_state", "TopPipe_lvl_5.smac_resp = TopPipe_lvl_4.smac_resp", "TopPipe_lvl_5.sume_metadata = TopPipe_lvl_4.sume_metadata", "TopPipe_lvl_5.user_metadata = TopPipe_lvl_4.user_metadata", "slab64_reg_dataRW_0.slab64_reg_dataRW_input = TopPipe_lvl_4.slab64_reg_dataRW_input", "TopPipe_lvl_5.slab64_reg_dataRW_output = slab64_reg_dataRW_0.slab64_reg_dataRW_output", "TopPipe_lvl_6.MemcachedControl_memcached_keyvalue_0_resp = TopPipe_lvl_5.MemcachedControl_memcached_keyvalue_0_resp", "TopPipe_lvl_6.MemcachedControl_register_address_0_resp = TopPipe_lvl_5.MemcachedControl_register_address_0_resp", "TopPipe_lvl_6.TopPipe_fl = TopPipe_lvl_5.TopPipe_fl", "TopPipe_lvl_6.broadcast_resp = TopPipe_lvl_5.broadcast_resp", "TopPipe_lvl_6.digest_data = TopPipe_lvl_5.digest_data", "TopPipe_lvl_6.forward_resp = TopPipe_lvl_5.forward_resp", "TopPipe_lvl_6.hdr = TopPipe_lvl_5.hdr", "TopPipe_lvl_6.local_state = TopPipe_lvl_5.local_state", "TopPipe_lvl_6.smac_resp = TopPipe_lvl_5.smac_resp", "TopPipe_lvl_6.sume_metadata = TopPipe_lvl_5.sume_metadata", "TopPipe_lvl_6.user_metadata = TopPipe_lvl_5.user_metadata", "compute_ip_chksum_0.compute_ip_chksum_input = TopPipe_lvl_5.compute_ip_chksum_input", "TopPipe_lvl_6.compute_ip_chksum_output = compute_ip_chksum_0.compute_ip_chksum_output"],
     "px_lookups" : [
-      {
-        "px_name" : "forward",
-        "p4_name" : "forward",
-        "px_class" : "LookupEngine",
-        "px_type_name" : "forward_t",
-        "match_type" : "EM",
-        "action_ids" : {
-          "TopPipe.set_output_port" : 1,
-          ".NoAction" : 2
-        },
-        "response_fields" : [
-          {
-            "px_name" : "hit",
-            "type" : "bits",
-            "size" : 1
-          },
-          {
-            "px_name" : "action_run",
-            "type" : "bits",
-            "size" : 2
-          },
-          {
-            "px_name" : "set_output_port_0",
-            "type" : "struct",
-            "fields" : [
-              {
-                "px_name" : "port",
-                "type" : "bits",
-                "size" : 8
-              }
-            ],
-            "p4_action" : "TopPipe.set_output_port"
-          }
-        ],
-        "request_fields" : [
-          {
-            "px_name" : "lookup_request_key_3",
-            "p4_name" : "hdr.ethernet.dstAddr",
-            "type" : "bits",
-            "size" : 48
-          }
-        ],
-        "annotations" : {
-          "name" : ["TopPipe.forward"],
-          "Xilinx_ExternallyConnected" : ["0"],
-          "Xilinx_LookupEngineType" : ["EM"]
-        }
-      },
       {
         "px_name" : "MemcachedControl_register_address_0",
         "p4_name" : "MemcachedControl_register_address_0",
@@ -255,9 +207,14 @@
             "type" : "struct",
             "fields" : [
               {
-                "px_name" : "info",
+                "px_name" : "reg_addr",
                 "type" : "bits",
-                "size" : 13
+                "size" : 8
+              },
+              {
+                "px_name" : "value_size",
+                "type" : "bits",
+                "size" : 5
               }
             ],
             "p4_action" : "TopPipe.MemcachedControl.set_stored_info"
@@ -364,56 +321,57 @@
           "Xilinx_ExternallyConnected" : ["0"],
           "Xilinx_LookupEngineType" : ["EM"]
         }
-      }
-    ],
-    "px_user_engines" : [
+      },
       {
-        "px_name" : "slab64_reg_dataRW_0",
-        "p4_name" : "slab64_reg_dataRW_0",
-        "px_class" : "UserEngine",
-        "px_type_name" : "slab64_reg_dataRW_0_t",
-        "input_decl" : {
-          "px_name" : "slab64_reg_dataRW_input",
-          "px_type_name" : "slab64_reg_dataRW_input_t"
+        "px_name" : "forward",
+        "p4_name" : "forward",
+        "px_class" : "LookupEngine",
+        "px_type_name" : "forward_t",
+        "match_type" : "EM",
+        "action_ids" : {
+          "TopPipe.set_output_port" : 1,
+          ".NoAction" : 2
         },
-        "output_decl" : {
-          "px_name" : "slab64_reg_dataRW_output",
-          "px_type_name" : "slab64_reg_dataRW_output_t"
-        },
-        "input_fields" : [
+        "response_fields" : [
           {
-            "px_name" : "stateful_valid_0",
+            "px_name" : "hit",
             "type" : "bits",
             "size" : 1
           },
           {
-            "px_name" : "index",
+            "px_name" : "action_run",
             "type" : "bits",
-            "size" : 8
+            "size" : 2
           },
           {
-            "px_name" : "newVal",
-            "type" : "bits",
-            "size" : 96
-          },
-          {
-            "px_name" : "opCode",
-            "type" : "bits",
-            "size" : 8
+            "px_name" : "set_output_port_0",
+            "type" : "struct",
+            "fields" : [
+              {
+                "px_name" : "port",
+                "type" : "bits",
+                "size" : 8
+              }
+            ],
+            "p4_action" : "TopPipe.set_output_port"
           }
         ],
-        "output_fields" : [
+        "request_fields" : [
           {
-            "px_name" : "result",
+            "px_name" : "lookup_request_key_3",
+            "p4_name" : "hdr.ethernet.dstAddr",
             "type" : "bits",
-            "size" : 96
+            "size" : 48
           }
         ],
         "annotations" : {
-          "Xilinx_MaxLatency" : ["1"],
-          "Xilinx_ControlWidth" : ["0"]
+          "name" : ["TopPipe.forward"],
+          "Xilinx_ExternallyConnected" : ["0"],
+          "Xilinx_LookupEngineType" : ["EM"]
         }
-      },
+      }
+    ],
+    "px_user_engines" : [
       {
         "px_name" : "compute_ip_chksum_0",
         "p4_name" : "compute_ip_chksum_0",
@@ -503,6 +461,53 @@
         ],
         "annotations" : {
           "Xilinx_MaxLatency" : ["3"],
+          "Xilinx_ControlWidth" : ["0"]
+        }
+      },
+      {
+        "px_name" : "slab64_reg_dataRW_0",
+        "p4_name" : "slab64_reg_dataRW_0",
+        "px_class" : "UserEngine",
+        "px_type_name" : "slab64_reg_dataRW_0_t",
+        "input_decl" : {
+          "px_name" : "slab64_reg_dataRW_input",
+          "px_type_name" : "slab64_reg_dataRW_input_t"
+        },
+        "output_decl" : {
+          "px_name" : "slab64_reg_dataRW_output",
+          "px_type_name" : "slab64_reg_dataRW_output_t"
+        },
+        "input_fields" : [
+          {
+            "px_name" : "stateful_valid_0",
+            "type" : "bits",
+            "size" : 1
+          },
+          {
+            "px_name" : "index",
+            "type" : "bits",
+            "size" : 8
+          },
+          {
+            "px_name" : "newVal",
+            "type" : "bits",
+            "size" : 96
+          },
+          {
+            "px_name" : "opCode",
+            "type" : "bits",
+            "size" : 8
+          }
+        ],
+        "output_fields" : [
+          {
+            "px_name" : "result",
+            "type" : "bits",
+            "size" : 96
+          }
+        ],
+        "annotations" : {
+          "Xilinx_MaxLatency" : ["1"],
           "Xilinx_ControlWidth" : ["0"]
         }
       },
