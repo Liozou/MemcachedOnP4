@@ -142,11 +142,13 @@ if (user_metadata.value_size_out[2:2] == 1) {\
 if (user_metadata.value_size_out[3:3] == 1) {\
   hdr.value_64.setValid();\
   hdr.value_64.value = user_metadata.value[63:0];\
-  hdr.value_128.value = user_metadata.value[191:64];\
+  user_metadata.value[127:0] = user_metadata.value[191:64];\
 }\
 \
 if (user_metadata.value_size_out[4:4] == 1) {\
   hdr.value_128.setValid();\
+  hdr.value_128.value = user_metadata.value[127:0];\
+  \
 }\
 \
 

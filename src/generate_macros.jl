@@ -45,42 +45,25 @@ function generate_parse_extract(key_or_value="key", length="hdr.memcached.key_le
   return ret*'\n'
 end
 
-function generate_repopulate_value(max_k=10, max_size=2040)
-  ret = "#define REPOPULATE_VALUE "
+function generate_repopulate(key_or_value="key", length="user_metadata.key_size", max_k=10, max_size=2040)
+  ret = "#define REPOPULATE_$(uppercase(key_or_value)) "
   rev_counter = max_size-1
-  for k in 3:max_k-2
+  for k in 3:max_k
     n = 2^k
     ret *= join(split("""
-    if (user_metadata.value_size_out[$(k-3):$(k-3)] == 1) {
-      hdr.value_$n.setValid();
-      hdr.value_$n.value = user_metadata.value[$(n-1):0];
-      user_metadata.value[$(rev_counter-n):0] = user_metadata.value[$rev_counter:$n];
+    if ($length[$(k-3):$(k-3)] == 1) {
+      hdr.$(key_or_value)_$n.setValid();
+      hdr.$(key_or_value)_$n.$(key_or_value) = user_metadata.$(key_or_value)[$(n-1):0];
+      $(k==max_k ? "" : "user_metadata.$(key_or_value)[$(rev_counter-n):0] = user_metadata.$(key_or_value)[$rev_counter:$n];")
     }
 
     """, '\n'), "\\\n")
     rev_counter -= n
   end
 
-  n = 2^(max_k-1)
-  ret *= join(split("""
-  if (user_metadata.value_size_out[$(max_k-4):$(max_k-4)] == 1) {
-    hdr.value_$n.setValid();
-    hdr.value_$n.value = user_metadata.value[$(n-1):0];
-    hdr.value_$(2^max_k).value = user_metadata.value[$rev_counter:$n];
-  }
-
-  """, '\n'), "\\\n")
-
-  n = 2^max_k
-  ret *= join(split("""
-  if (user_metadata.value_size_out[$(max_k-3):$(max_k-3)] == 1) {
-    hdr.value_$n.setValid();
-  }
-
-  """, '\n'), "\\\n")
-
   return ret*'\n'
 end
+
 
 function main(file)
   # n_key_max = 256
@@ -107,6 +90,7 @@ function main(file)
     """)
     println(f, generate_parse_extract("key", "hdr.memcached.key_length", "user_metadata", size_key, k_key_max))
     println(f, generate_parse_extract("value", "user_metadata.value_size", "user_metadata", size_val, k_val_max))
-    println(f, generate_repopulate_value(k_val_max, size_val))
+    # println(f, generate_repopulate("key", "user_metadata.key_size", k_key_max, size_key))
+    println(f, generate_repopulate("value", "user_metadata.value_size_out", k_val_max, size_val))
   end
 end
