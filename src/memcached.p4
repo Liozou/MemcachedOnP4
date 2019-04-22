@@ -157,9 +157,12 @@ control MemcachedControl(inout headers hdr,
                 REPOPULATE_VALUE
                 UNSET_KEY
 
+
                 hdr.memcached.total_body = (bit<32>)user_metadata.value_size_out + 4;
-                hdr.ipv4.totalLen = hdr.ipv4.totalLen + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
-                hdr.udp.udpLength = hdr.udp.udpLength + (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
+                bit<16> size_diff = (bit<16>)user_metadata.value_size_out + 4 - hdr.memcached.key_length;
+                hdr.ipv4.totalLen = hdr.ipv4.totalLen + size_diff;
+                hdr.udp.udpLength = hdr.udp.udpLength + size_diff;
+                sume_metadata.pkt_len = sume_metadata.pkt_len + size_diff;
 
                 hdr.memcached.key_length = 0;
                 hdr.memcached.extras_length = 4;
