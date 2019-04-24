@@ -39,8 +39,3 @@
 #define DEPARSE_KEY _REPEAT_KEY(_DEPARSE_KEY)
 #define _DEPARSE_VALUE(n, next) packet.emit(hdr.value_##n);
 #define DEPARSE_VALUE _REPEAT_VALUE(_DEPARSE_VALUE)
-
-
-#define OP_IS_GET (hdr.memcached.opcode==0x00)
-#define OP_IS_SET (hdr.memcached.opcode==0x01)
-#define OP_IS_GETK (hdr.memcached.opcode==0x0c)

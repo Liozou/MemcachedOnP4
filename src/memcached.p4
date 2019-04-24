@@ -54,7 +54,7 @@ control MemcachedControl(inout headers hdr,
         user_metadata.reg_addr = reg_addr;
     }
 
-    bit<12> slabID;
+    bit<12> slabID = 0;
     table register_address {
         key = { slabID: exact; }
         actions = { set_register_address; }
@@ -68,28 +68,29 @@ control MemcachedControl(inout headers hdr,
             return;
         }
 
+        bit<1> isRequest = (bit<1>)(hdr.memcached.magic == 0x80);
         bool is_stored_key = memcached_keyvalue.apply().hit;
 
-        bool do_reg_operation = OP_IS_GET && is_stored_key;
+        bit<1> isGET = (bit<1>)(hdr.memcached.opcode == 0x00) & isRequest;
+        bit<1> isSET = (bit<1>)(hdr.memcached.opcode == 0x01) & isRequest;
+        bit<1> isGETK = (bit<1>)(hdr.memcached.opcode == 0x0c) & ~isRequest;
+
+        bool do_reg_operation = (bool)(isGET & (bit<1>)is_stored_key);
 
         bit<8> reg_opcode = REG_READ;
 
-        if (user_metadata.isRequest ? OP_IS_SET : OP_IS_GETK) {
+        if ((bool)(isSET | isGETK)) {
 
             do_reg_operation = (hdr.memcached.vbucket_id == 0);
-            /* If OP_IS_SET, this is just a sanity check since we only handle a
+            /* If isSET, this is just a sanity check since we only handle a
              * single bucket
-             * If OP_IS_GETK, this ensures that the server had the key-value
+             * If isGETK, this ensures that the server had the key-value
              * pair and no error happened there.
              */
 
-            bit<5> x_value_size_in = user_metadata.value_size[4:0];
-            x_value_size_in = x_value_size_in | (x_value_size_in >> 1);
-            x_value_size_in = x_value_size_in | (x_value_size_in >> 2);
+            bit<2> x_value_size_in = user_metadata.value_size[4:3];
+            bit<2> x_value_size_out = user_metadata.value_size_out[4:3];
             x_value_size_in[0:0] = x_value_size_in[0:0] | x_value_size_in[1:1];
-            bit<5> x_value_size_out = user_metadata.value_size_out;
-            x_value_size_out = x_value_size_out | (x_value_size_out >> 1);
-            x_value_size_out = x_value_size_out | (x_value_size_out >> 2);
             x_value_size_out[0:0] = x_value_size_out[0:0] | x_value_size_out[1:1];
 
             user_metadata.value_size_out = user_metadata.value_size[4:0];
@@ -98,28 +99,25 @@ control MemcachedControl(inout headers hdr,
                 /* This will be executed either if memcached_keyvalue was a miss
                  * (because then value_size_out = 0) or if it was a hit but the
                  * stored value is not in the same slab as the new value.
-                 * Indeed, x_value_size_in == x_value_size_out if and only if
-                 * value_size_out and value_size have the same highest set bit.
                  */
 
-                if (user_metadata.value_size_out <= 8) { slabID = 1; }
-                else if (user_metadata.value_size_out <= 16) { slabID = 2; }
-                else { slabID = 3; }
+                if (x_value_size_in[1:1] == 1) { slabID[1:0] = 3; }
+                else { slabID[1:0] = x_value_size_in + 1; }
 
                 register_address.apply();
                 digest_data.store_new_key = 1;
                 digest_data.remove_this_key = (bit<1>)is_stored_key;
             }
 
-            if (!user_metadata.isRequest) { // i.e. opcode is GETK
+            if ((bool)isGETK) { // i.e. opcode is GETK
                 hdr.memcached.opcode = 0x00;
                 hdr.memcached.total_body = hdr.memcached.total_body - (bit<32>) hdr.memcached.key_length;
+                sume_metadata.pkt_len = sume_metadata.pkt_len - hdr.memcached.key_length;
                 hdr.memcached.key_length = 0;
                 UNSET_KEY
-                /* Past this point, OP_IS_GETK merges with OP_IS_GET if the
-                 * packet is a response.
+                /* Past this point, GETK merges with GET for responses.
                  * The only difference is that if the packet used to be
-                 * OP_IS_GETK, the new key-value will be added to the store
+                 * GETK, the new key-value will be added to the store
                  */
             }
 
@@ -148,7 +146,7 @@ control MemcachedControl(inout headers hdr,
         digest_data.magic = hdr.memcached.magic;
         digest_data.opcode = hdr.memcached.opcode;
 
-        if (user_metadata.isRequest && OP_IS_GET) {
+        if ((bool)isGET) { // This is not triggered for former GETK packets
             if (is_stored_key) {
                 hdr.extras_flags.setValid();
                 hdr.extras_flags.flags = user_metadata.value[31:0];

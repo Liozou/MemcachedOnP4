@@ -101,7 +101,6 @@ struct digest_data_t {
 
 struct user_metadata_t {
     bit<32> value_size;    // in bytes
-    bool isRequest;
     bit<5> value_size_out;
     bit<8> reg_addr;
     key_t key;

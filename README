@@ -1,0 +1,13 @@
+This is a project to run the Memcached application on a switch using the P4->NetFPGA design flow
+
+
+To install, put this folder under P4-NetFPGA-live/contrib-projects/sume-sdnet-switch/projects and source P4-NetFPGA-live/tools/settings.sh after having set P4_PROJECT_NAME to MemcachedOnP4.
+
+The last bitfile to meet the timing constraints is at MemcachedOnP4/simple_sume_switch/bitfiles/MemcachedOnP4.bit
+
+The functionality testing tool hwtest.py is used to send packet using scapy.all.sendp and sniffing them using pcapy.
+To select a memcached packet to send, call send_memcached with the desired options (op for the opcode, magic, flags, key, value, etc.). The delay parameter specifies a delay before sending this packet compared to the last one added using send_memcached.
+After having called all the send_memcached accordingly, call prepare_expected() to generate the expected packets, then run_hw_test() to run the test
+
+The file is currently set to FLUSH the cache, send a few SET packets and then a higher number of GET that should hit the cache.
+
